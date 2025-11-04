@@ -1,7 +1,6 @@
 "use client"
 
-import { ConnectionStatusIndicator } from "./connection-status-indicator"
-import { SyncStatusIndicator } from "./sync-status-indicator"
+import { SyncStatusEnhanced } from "./sync-status-enhanced"
 
 export function AppHeader() {
   return (
@@ -10,10 +9,7 @@ export function AppHeader() {
         <h1 className="text-2xl font-bold text-primary hidden md:block">Khatabook</h1>
         <div className="flex flex-col items-end gap-1 md:gap-2">
           <p className="text-sm text-muted-foreground">Welcome to your financial ledger</p>
-          <div className="flex items-center gap-2">
-            <ConnectionStatusIndicator />
-            <SyncStatusIndicator />
-          </div>
+          <SyncStatusEnhanced />
         </div>
       </div>
     </header>

@@ -47,6 +47,7 @@
     "cmdk": "latest",
     "date-fns": "latest",
     "embla-carousel-react": "latest",
+    "idb": "^8.0.3",
     "immer": "latest",
     "input-otp": "latest",
     "lucide-react": "^0.454.0",
