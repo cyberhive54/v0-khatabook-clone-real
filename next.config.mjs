@@ -2,11 +2,10 @@ import withPWA from 'next-pwa';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ✅ Force Next.js to use Webpack instead of Turbopack
+  turbopack: {}, // explicitly disable custom Turbopack config
   reactStrictMode: true,
   swcMinify: true,
-
-  // 👇 Force Next.js 16 to use Webpack instead of Turbopack
-  webpack: (config) => config,
 
   images: {
     unoptimized: true,
@@ -26,6 +25,7 @@ const nextConfig = {
 
   output: 'standalone',
 
+  // ✅ PWA configuration (works only with Webpack)
   pwa: {
     dest: 'public',
     register: true,
@@ -60,6 +60,9 @@ const nextConfig = {
       },
     ],
   },
+
+  // ✅ Hook to make sure Webpack mode is used
+  webpack: (config) => config,
 };
 
 export default withPWA(nextConfig);
