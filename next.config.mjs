@@ -5,6 +5,9 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
 
+  // 👇 Force Next.js 16 to use Webpack instead of Turbopack
+  webpack: (config) => config,
+
   images: {
     unoptimized: true,
   },
@@ -23,14 +26,12 @@ const nextConfig = {
 
   output: 'standalone',
 
-  // ✅ Progressive Web App (PWA) configuration
   pwa: {
     dest: 'public',
     register: true,
     skipWaiting: true,
     disable: process.env.NODE_ENV === 'development',
     runtimeCaching: [
-      // Cache Google Fonts
       {
         urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
         handler: 'CacheFirst',
@@ -39,7 +40,6 @@ const nextConfig = {
           expiration: { maxEntries: 20, maxAgeSeconds: 31536000 },
         },
       },
-      // Cache CDN assets (CSS, JS, icons)
       {
         urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/.*/i,
         handler: 'CacheFirst',
@@ -48,7 +48,6 @@ const nextConfig = {
           expiration: { maxEntries: 30, maxAgeSeconds: 31536000 },
         },
       },
-      // Cache all other routes (pages, APIs, images)
       {
         urlPattern: /^https?.*/i,
         handler: 'NetworkFirst',
