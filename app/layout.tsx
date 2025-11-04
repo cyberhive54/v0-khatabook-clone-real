@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
+import RegisterServiceWorker from "@/components/RegisterServiceWorker";
 import "./globals.css";
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* PWA essentials for cross-browser support */}
+        {/* PWA essentials */}
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#000000" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
@@ -46,6 +47,8 @@ export default function RootLayout({
           storageKey="khatabook-theme"
         >
           {children}
+          {/* ✅ Register service worker here */}
+          <RegisterServiceWorker />
         </ThemeProvider>
         <Analytics />
       </body>
