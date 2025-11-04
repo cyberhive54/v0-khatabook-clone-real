@@ -1,3 +1,4 @@
+
 import { createClient as createBrowserClient } from '@/lib/supabase/client'
 import { offlineDB, Contact, Transaction, Settings, SyncQueueItem } from './db'
 import { networkMonitor } from './network-monitor'
