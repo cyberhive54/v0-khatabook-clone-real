@@ -1,73 +1,86 @@
-const CACHE_NAME = 'v0-app-cache-v1';
+const CACHE_NAME = 'v0-app-cache-v2';
+
 const PRECACHE_URLS = [
   '/', 
   '/manifest.json',
   '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/icons/icon-512x512.png',
+  '/offline.html', // fallback page (optional but recommended)
 ];
 
-// Install: precache core assets
+// ✅ Install — safely pre-cache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        // Try caching all URLs
+        await cache.addAll(PRECACHE_URLS);
+        console.log('[Service Worker] Pre-caching complete.');
+      } catch (err) {
+        // If any URL fails (e.g., 404), log it instead of breaking install
+        console.warn('[Service Worker] Some assets failed to cache:', err);
+      }
+    })()
   );
   self.skipWaiting();
 });
 
-// Activate: cleanup old caches
+// ✅ Activate — clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((k) => (k !== CACHE_NAME ? caches.delete(k) : null)))
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log('[Service Worker] Deleting old cache:', key);
+            return caches.delete(key);
+          }
+        })
+      )
     )
   );
   self.clients.claim();
 });
 
-// Fetch: Cache-first for navigation/GET, then network fallback
+// ✅ Fetch — cache-first for navigation, network fallback
 self.addEventListener('fetch', (event) => {
   const req = event.request;
 
-  // skip non-GET requests
+  // Only handle GET requests
   if (req.method !== 'GET') return;
 
-  // Prefer cache for navigations (fast offline load)
+  // HTML/navigation requests
   if (req.mode === 'navigate' || req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
-      caches.match(req).then((cached) => {
-        if (cached) return cached;
-        return fetch(req)
-          .then((res) => {
-            // cache successful responses for future offline use
-            const resClone = res.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(req, resClone).catch(() => {});
-            });
-            return res;
-          })
-          .catch(() => caches.match('/')) // fallback to index if available
-      })
+      (async () => {
+        const cache = await caches.open(CACHE_NAME);
+        try {
+          // Try network first (ensures updates)
+          const fresh = await fetch(req);
+          cache.put(req, fresh.clone());
+          return fresh;
+        } catch (err) {
+          // Offline fallback — use cache or offline.html
+          const cached = await cache.match(req);
+          return cached || (await cache.match('/offline.html'));
+        }
+      })()
     );
     return;
   }
 
-  // For other requests: try cache, then network, then cache fallback
+  // Other requests (assets, images, etc.)
   event.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
       return fetch(req)
         .then((res) => {
-          // store runtime responses
           const resClone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(req, resClone).catch(() => {});
-          });
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
           return res;
         })
-        .catch(() => {
-          // optional: return cached image/placeholders if you added them to precache
-          return caches.match(req);
-        });
+        .catch(() => caches.match('/offline.html')); // last resort
     })
   );
 });
