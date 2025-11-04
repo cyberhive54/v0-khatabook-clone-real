@@ -69,7 +69,8 @@ Preferred communication style: Simple, everyday language.
   - Row-level security should be configured in production
 
 **Third-Party Libraries**:
-- **SWR**: Data fetching and caching layer
+- **SWR**: Data fetching and caching layer (used alongside offline hooks)
+- **idb**: IndexedDB wrapper for offline storage
 - **Recharts**: Chart library for reports and visualizations
 - **date-fns**: Date formatting and manipulation
 - **Radix UI**: Accessible component primitives
@@ -93,9 +94,49 @@ Preferred communication style: Simple, everyday language.
 - npm as package manager (package-lock.json present)
 - Development workflow: `npm run dev` on port 5000
 
+### Offline-First Sync Engine
+
+**Architecture** (Implemented Nov 4, 2025):
+- **IndexedDB Storage**: Complete offline database using `idb` library (`lib/sync/db.ts`)
+  - Stores: contacts, transactions, settings, sync queue, sync logs
+  - Supports full CRUD operations offline
+  - Automatic data persistence and retrieval
+
+**Sync Manager** (`lib/sync/sync-manager.ts`):
+- **Auto-sync**: Automatically syncs every 1 minute when online
+- **Manual sync**: User-triggered sync via button in header
+- **Conflict Resolution**: Last-Write-Wins strategy using timestamps
+- **Queue System**: Operations queued when offline, processed when online
+- **Auto-retry**: Failed operations retry with exponential backoff (max 3 retries)
+- **Network Monitor**: Detects online/offline status changes in real-time
+
+**Offline-First Hooks**:
+- `useContactsOffline`: Manages contacts with offline support
+- `useTransactionsOffline`: Manages transactions with offline support
+- All operations write to IndexedDB first, then sync to Supabase when online
+
+**Sync UI Components**:
+- **SyncStatusEnhanced**: Shows sync status (syncing/synced/offline/error) with icons
+- **Manual Sync Button**: Allows user to trigger sync on demand
+- **Sync Logs Modal**: Detailed debugging logs accessible via eye icon
+- **Settings Integration**: Sync information and controls in settings page
+
+**Data Flow**:
+1. User performs action → Update IndexedDB immediately
+2. If online → Also update Supabase, on error add to queue
+3. If offline → Add operation to sync queue
+4. When online → Process queue, download latest from Supabase
+5. Auto-sync runs every 60 seconds to keep data fresh
+
+**Logging System**:
+- All sync operations logged with timestamps
+- Success/error/pending status tracking
+- Last 100 logs kept for debugging
+- Viewable via eye icon in header or settings page
+
 ### Notable Architectural Decisions
 
-**Offline Capability**: Settings include `offlineMode` and `liveNetworkCheck` flags, suggesting planned offline-first features, though full implementation appears incomplete.
+**Offline-First Design**: Complete offline functionality with IndexedDB as primary storage. App works fully offline with automatic background sync when online.
 
 **Currency Flexibility**: Multi-currency support built in with configurable currency symbols and formatting utilities.
 
