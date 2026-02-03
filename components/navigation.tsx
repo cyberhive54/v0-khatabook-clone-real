@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Users, Receipt, BookOpen, BarChart3, Settings, Menu, X } from "lucide-react"
+import { LayoutDashboard, Users, Receipt, BookOpen, BarChart3, Settings, Menu, X, LogOut } from "lucide-react"
 import { useState } from "react"
+import { logout } from "@/app/auth/actions"
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -54,6 +55,16 @@ export function Navigation() {
             )
           })}
         </nav>
+
+        <div className="absolute bottom-6 left-6 right-6">
+          <button
+            onClick={() => logout()}
+            className="flex w-full items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-destructive"
+          >
+            <LogOut size={20} />
+            <span>Logout</span>
+          </button>
+        </div>
       </aside>
 
       <div className="md:ml-64" />
