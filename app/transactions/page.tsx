@@ -78,10 +78,10 @@ export default function TransactionsPage() {
       }
 
       if (editingId) {
-        await updateTransaction(editingId, transactionData, bills.filter((b) => !b.id) as any)
+        await updateTransaction(editingId, transactionData, bills)
         setEditingId(null)
       } else {
-        await addTransaction(transactionData, bills as any)
+        await addTransaction(transactionData, bills)
       }
 
       setFormData({

@@ -208,8 +208,8 @@ export default function LedgerPage() {
                               <td className="py-3 px-2 text-foreground max-w-xs">
                                 <div className="flex items-center gap-2">
                                   <span className="truncate">{t.description || "-"}</span>
-                                  {t.bill_photos && t.bill_photos.length > 0 && (
-                                    <ImageIcon size={16} className="text-muted-foreground flex-shrink-0" />
+                                  {t.bills && t.bills.length > 0 && (
+                                  <ImageIcon size={16} className="text-muted-foreground flex-shrink-0" />
                                   )}
                                 </div>
                               </td>

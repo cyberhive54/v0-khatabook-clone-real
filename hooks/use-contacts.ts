@@ -9,9 +9,10 @@ export interface Contact {
   phone: string
   email: string
   address: string
+  notes: string
   profile_pic?: string
   balance: number
-  notes: string
+  created_at?: string
 }
 
 const supabase = createClient()

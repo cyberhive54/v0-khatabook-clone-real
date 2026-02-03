@@ -29,6 +29,7 @@ export default function ContactsPage() {
     address: "",
     notes: "",
     profile_pic: "",
+    balance: 0,
   })
   const [uploadedImage, setUploadedImage] = useState<string>("")
 
@@ -63,7 +64,7 @@ export default function ContactsPage() {
       } else {
         await addContact(formData)
       }
-      setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "" })
+      setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "", balance:0, })
       setUploadedImage("")
       setShowForm(false)
     } catch (error) {
@@ -79,6 +80,7 @@ export default function ContactsPage() {
       address: contact.address,
       notes: contact.notes,
       profile_pic: contact.profile_pic || "",
+      balance: contact.balance ?? 0,
     })
     setUploadedImage(contact.profile_pic || "")
     setEditingId(contact.id)
@@ -112,7 +114,7 @@ export default function ContactsPage() {
               onClick={() => {
                 setShowForm(true)
                 setEditingId(null)
-                setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "" })
+                setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "", balance:0, })
                 setUploadedImage("")
               }}
               className="bg-primary text-primary-foreground hover:bg-primary/90"

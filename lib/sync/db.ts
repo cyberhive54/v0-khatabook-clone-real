@@ -80,6 +80,16 @@ interface KhatabookDB extends DBSchema {
   }
 }
 
+const STORE_NAMES = [
+  'contacts',
+  'transactions',
+  'settings',
+  'syncQueue',
+  'syncLogs',
+] as const
+
+type StoreName = (typeof STORE_NAMES)[number]
+
 class OfflineDB {
   private db: IDBPDatabase<KhatabookDB> | null = null
   private dbName = 'khatabook-offline'
@@ -120,33 +130,41 @@ class OfflineDB {
     return this.db
   }
 
-  async getAll<T extends keyof KhatabookDB>(storeName: T): Promise<KhatabookDB[T]['value'][]> {
-    const db = await this.init()
-    return db.getAll(storeName)
-  }
+  async getAll<T extends StoreName>(
+  storeName: T
+): Promise<KhatabookDB[T]['value'][]> {
+  const db = await this.init()
+  return db.getAll(storeName)
+}
 
-  async get<T extends keyof KhatabookDB>(
-    storeName: T,
-    key: string
-  ): Promise<KhatabookDB[T]['value'] | undefined> {
-    const db = await this.init()
-    return db.get(storeName, key)
-  }
+  async get<T extends StoreName>(
+  storeName: T,
+  key: string
+): Promise<KhatabookDB[T]['value'] | undefined> {
+  const db = await this.init()
+  return db.get(storeName, key)
+}
 
-  async put<T extends keyof KhatabookDB>(storeName: T, value: KhatabookDB[T]['value']) {
-    const db = await this.init()
-    return db.put(storeName, value)
-  }
+  async put<T extends StoreName>(
+  storeName: T,
+  value: KhatabookDB[T]['value']
+) {
+  const db = await this.init()
+  return db.put(storeName, value)
+}
 
-  async delete<T extends keyof KhatabookDB>(storeName: T, key: string) {
-    const db = await this.init()
-    return db.delete(storeName, key)
-  }
+  async delete<T extends StoreName>(
+  storeName: T,
+  key: string
+) {
+  const db = await this.init()
+  return db.delete(storeName, key)
+}
 
-  async clear<T extends keyof KhatabookDB>(storeName: T) {
-    const db = await this.init()
-    return db.clear(storeName)
-  }
+  async clear<T extends StoreName>(storeName: T) {
+  const db = await this.init()
+  return db.clear(storeName)
+}
 
   async addToSyncQueue(item: Omit<SyncQueueItem, 'id'>) {
     const db = await this.init()
