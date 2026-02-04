@@ -94,9 +94,13 @@ export function useTransactions() {
   transaction: Omit<Transaction, "id" | "bills">,
   bills?: Omit<Bill, "id" | "transaction_id">[]
   ) => {
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) throw new Error("User not authenticated")
+
   const { data: newTransaction, error } = await supabase
     .from("transactions")
-    .insert([transaction])
+    .insert([{ ...transaction, user_id: user.id }])
     .select()
 
   if (error) throw new Error(error.message)
