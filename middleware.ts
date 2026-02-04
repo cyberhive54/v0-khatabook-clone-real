@@ -1,6 +1,20 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
+type CookieItem = {
+  name: string
+  value: string
+  options?: {
+    path?: string
+    domain?: string
+    maxAge?: number
+    expires?: Date
+    secure?: boolean
+    httpOnly?: boolean
+    sameSite?: "lax" | "strict" | "none"
+  }
+}
+
 /**
  * Middleware for route protection and authentication
  * This runs on every request to protect routes based on authentication status
@@ -20,7 +34,7 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookieItem[]) {
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
