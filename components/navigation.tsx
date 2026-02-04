@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, Users, Receipt, BookOpen, BarChart3, Settings, Menu, X } from "lucide-react"
 import { useState } from "react"
+import { SyncStatusEnhanced } from "./sync-status-enhanced"
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -28,32 +29,39 @@ export function Navigation() {
       </button>
 
       <aside
-        className={`fixed left-0 top-0 h-screen w-64 bg-sidebar text-sidebar-foreground p-6 transform transition-transform md:translate-x-0 z-30 ${
+        className={`fixed left-0 top-0 h-screen w-64 bg-sidebar text-sidebar-foreground p-6 transform transition-transform md:translate-x-0 z-30 flex flex-col ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <h1 className="text-2xl font-bold mb-8 text-sidebar-primary">Khatabook</h1>
-        <nav className="space-y-2">
-          {navItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                }`}
-              >
-                <Icon size={20} />
-                <span>{item.label}</span>
-              </Link>
-            )
-          })}
-        </nav>
+        <div>
+          <h1 className="text-2xl font-bold mb-8 text-sidebar-primary">Khatabook</h1>
+          <nav className="space-y-2">
+            {navItems.map((item) => {
+              const Icon = item.icon
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActive
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                  }`}
+                >
+                  <Icon size={20} />
+                  <span>{item.label}</span>
+                </Link>
+              )
+            })}
+          </nav>
+        </div>
+
+        {/* Sync Status at bottom */}
+        <div className="mt-auto pt-6 border-t border-sidebar-accent">
+          <SyncStatusEnhanced />
+        </div>
       </aside>
 
       <div className="md:ml-64" />
