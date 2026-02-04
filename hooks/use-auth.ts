@@ -63,7 +63,7 @@ export function useAuth() {
     return () => {
       subscription?.unsubscribe()
     }
-  }, [supabase])
+  }, [])
 
   const signUp = useCallback(
     async (email: string, password: string, fullName?: string) => {
@@ -148,13 +148,13 @@ export function useAuth() {
   }, [supabase, router])
 
   const resetPassword = useCallback(
-    async (email: string) => {
+    async (email: string, redirectUrl?: string) => {
       setLoading(true)
       setError(null)
 
       try {
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/reset-password`,
+          redirectTo: redirectUrl || `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/reset-password`,
         })
 
         if (resetError) {
