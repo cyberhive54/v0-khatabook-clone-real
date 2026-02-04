@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ToastProvider } from "@/contexts/toast-context";
 import RegisterServiceWorker from "@/components/RegisterServiceWorker";
 import "./globals.css";
 
@@ -46,9 +47,11 @@ export default function RootLayout({
           enableSystem
           storageKey="khatabook-theme"
         >
-          {children}
-          {/* ✅ Register service worker here */}
-          <RegisterServiceWorker />
+          <ToastProvider>
+            {children}
+            {/* ✅ Register service worker here */}
+            <RegisterServiceWorker />
+          </ToastProvider>
         </ThemeProvider>
         <Analytics />
       </body>

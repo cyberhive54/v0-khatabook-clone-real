@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import useSWR from "swr"
 import { createClient } from "@/lib/supabase/client"
 
@@ -36,11 +37,23 @@ async function fetchTransactions(): Promise<Transaction[]> {
 
 export function useTransactions() {
   const { data, error, isLoading, mutate } = useSWR("transactions", fetchTransactions)
+  const [operationLoading, setOperationLoading] = React.useState(false)
+  const [operationError, setOperationError] = React.useState<string | null>(null)
 
   const deleteTransaction = async (id: string) => {
-    const { error } = await supabase.from("transactions").delete().eq("id", id)
-    if (error) throw new Error(error.message)
-    mutate()
+    setOperationLoading(true)
+    setOperationError(null)
+    try {
+      const { error } = await supabase.from("transactions").delete().eq("id", id)
+      if (error) throw new Error(error.message)
+      mutate()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to delete transaction"
+      setOperationError(message)
+      throw err
+    } finally {
+      setOperationLoading(false)
+    }
   }
 
   const updateTransaction = async (
@@ -48,29 +61,39 @@ export function useTransactions() {
   updates: Partial<Transaction>,
   bills?: Omit<Bill, "id" | "transaction_id">[]
   ) => {
-  const { error } = await supabase
-    .from("transactions")
-    .update(updates)
-    .eq("id", id)
+  setOperationLoading(true)
+  setOperationError(null)
+  try {
+    const { error } = await supabase
+      .from("transactions")
+      .update(updates)
+      .eq("id", id)
 
-  if (error) throw new Error(error.message)
+    if (error) throw new Error(error.message)
 
-  if (bills && bills.length > 0) {
-    await supabase.from("bills").delete().eq("transaction_id", id)
+    if (bills && bills.length > 0) {
+      await supabase.from("bills").delete().eq("transaction_id", id)
 
-    const billsWithTransactionId = bills.map((bill) => ({
-      ...bill,
-      transaction_id: id,
-    }))
+      const billsWithTransactionId = bills.map((bill) => ({
+        ...bill,
+        transaction_id: id,
+      }))
 
-    const { error: billsError } = await supabase
-      .from("bills")
-      .insert(billsWithTransactionId)
+      const { error: billsError } = await supabase
+        .from("bills")
+        .insert(billsWithTransactionId)
 
-    if (billsError) throw new Error(billsError.message)
+      if (billsError) throw new Error(billsError.message)
+    }
+
+    mutate()
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to update transaction"
+    setOperationError(message)
+    throw err
+  } finally {
+    setOperationLoading(false)
   }
-
-  mutate()
   }
 
   const addBillToTransaction = async (transactionId: string, bill: Omit<Bill, "id" | "transaction_id">) => {
@@ -94,34 +117,50 @@ export function useTransactions() {
   transaction: Omit<Transaction, "id" | "bills">,
   bills?: Omit<Bill, "id" | "transaction_id">[]
   ) => {
-  const { data: newTransaction, error } = await supabase
-    .from("transactions")
-    .insert([transaction])
-    .select()
+  setOperationLoading(true)
+  setOperationError(null)
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) throw new Error("User not authenticated")
 
-  if (error) throw new Error(error.message)
+    const { data: newTransaction, error } = await supabase
+      .from("transactions")
+      .insert([{ ...transaction, user_id: user.id }])
+      .select()
 
-  if (newTransaction?.[0] && bills && bills.length > 0) {
-    const billsWithTransactionId = bills.map((bill) => ({
-      ...bill,
-      transaction_id: newTransaction[0].id,
-    }))
+    if (error) throw new Error(error.message)
 
-    const { error: billsError } = await supabase
-      .from("bills")
-      .insert(billsWithTransactionId)
+    if (newTransaction?.[0] && bills && bills.length > 0) {
+      const billsWithTransactionId = bills.map((bill) => ({
+        ...bill,
+        transaction_id: newTransaction[0].id,
+      }))
 
-    if (billsError) throw new Error(billsError.message)
+      const { error: billsError } = await supabase
+        .from("bills")
+        .insert(billsWithTransactionId)
+
+      if (billsError) throw new Error(billsError.message)
+    }
+
+    mutate()
+    return newTransaction?.[0]
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to add transaction"
+    setOperationError(message)
+    throw err
+  } finally {
+    setOperationLoading(false)
   }
-
-  mutate()
-  return newTransaction?.[0]
   }
 
   return {
     transactions: data || [],
     isLoading,
     error,
+    operationLoading,
+    operationError,
     addTransaction,
     deleteTransaction,
     updateTransaction,

@@ -142,9 +142,9 @@ export default function TransactionsPage() {
     let result = [...transactions]
 
     if (filter === "you_got") {
-      result = result.filter((t) => (t.you_got || 0) > 0)
+      result = result.filter((t) => (t.you_got || 0) > 0) // "will give" = you_got amounts
     } else if (filter === "you_give") {
-      result = result.filter((t) => (t.you_give || 0) > 0)
+      result = result.filter((t) => (t.you_give || 0) > 0) // "will get" = you_give amounts
     } else if (filter === "settled_up") {
       const contactBalances: { [key: string]: number } = {}
       transactions.forEach((t) => {
@@ -250,8 +250,8 @@ export default function TransactionsPage() {
                     onChange={(e) => setFormData({ ...formData, transactionType: e.target.value })}
                     className="px-4 py-2 border border-border rounded-lg bg-input text-foreground"
                   >
-                    <option value="give">You Give</option>
-                    <option value="got">You Got</option>
+                    <option value="give">Will Get (I give)</option>
+                    <option value="got">Will Give (I got from them)</option>
                   </select>
                   <input
                     type="number"
@@ -347,8 +347,8 @@ export default function TransactionsPage() {
                   className="appearance-none px-4 py-2 border border-border rounded-lg bg-input text-foreground pr-8"
                 >
                   <option value="all">All</option>
-                  <option value="you_got">You Got</option>
-                  <option value="you_give">You Give</option>
+                  <option value="you_got">Will Give (I got)</option>
+                  <option value="you_give">Will Get (I give)</option>
                   <option value="settled_up">Settled Up</option>
                 </select>
                 <ChevronDown
@@ -384,8 +384,8 @@ export default function TransactionsPage() {
               <thead className="bg-muted border-b border-border">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Contact</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">You Give</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">You Got</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Will Get</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Will Give</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Date</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Description & Bills</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Balance</th>

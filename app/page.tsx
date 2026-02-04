@@ -52,9 +52,9 @@ export default function Dashboard() {
     let filtered = contactsWithLastTransaction
 
     if (contactsFilter === "you_got") {
-      filtered = filtered.filter((c) => c.balance > 0)
+      filtered = filtered.filter((c) => c.balance < 0) // You got (owe them) = negative balance
     } else if (contactsFilter === "you_give") {
-      filtered = filtered.filter((c) => c.balance < 0)
+      filtered = filtered.filter((c) => c.balance > 0) // You give (they owe) = positive balance
     } else if (contactsFilter === "settled") {
       filtered = filtered.filter((c) => c.balance === 0)
     }
@@ -98,8 +98,9 @@ export default function Dashboard() {
     setTransactionModalOpen(true)
   }
 
-  const totalYouWillGet = transactions.reduce((sum, t) => sum + (t.you_got || 0), 0)
-  const totalYouWillGive = transactions.reduce((sum, t) => sum + (t.you_give || 0), 0)
+  // Swapped logic: "you will get" = you_give amounts (will get back), "you will give" = you_got amounts (must return)
+  const totalYouWillGet = transactions.reduce((sum, t) => sum + (t.you_give || 0), 0)
+  const totalYouWillGive = transactions.reduce((sum, t) => sum + (t.you_got || 0), 0)
   const netBalance = totalYouWillGet - totalYouWillGive
 
   const isLoading = contactsLoading || transactionsLoading
@@ -261,10 +262,10 @@ export default function Dashboard() {
                         <p className="text-xs text-muted-foreground">{format(new Date(t.date), "MMM dd, yyyy")}</p>
                       </div>
                     </div>
-                    <span className={`font-semibold text-sm ${t.you_got ? "text-secondary" : "text-destructive"}`}>
-                      {t.you_got && t.you_got > 0
-                        ? `You got ${formatCurrency(t.you_got || 0, settings.currency)}`
-                        : `You give ${formatCurrency(t.you_give || 0, settings.currency)}`}
+                    <span className={`font-semibold text-sm ${t.you_give ? "text-secondary" : "text-destructive"}`}>
+                      {t.you_give && t.you_give > 0
+                        ? `Will get ${formatCurrency(t.you_give || 0, settings.currency)}`
+                        : `Will give ${formatCurrency(t.you_got || 0, settings.currency)}`}
                     </span>
                   </div>
                 ))}
