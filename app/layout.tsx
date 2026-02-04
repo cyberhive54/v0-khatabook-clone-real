@@ -15,12 +15,20 @@ export const metadata: Metadata = {
   description: "Manage your business finances with ease",
   generator: "v0.app",
   manifest: "/manifest.json",
-  themeColor: "#000000",
   icons: {
-    icon: "/icons/icon-192x192.png",
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
     apple: "/icons/icon-192x192.png",
   },
-};
+}
+
+
+export const viewport = {
+  themeColor: "#0f172a",
+}
+
 
 export default function RootLayout({
   children,

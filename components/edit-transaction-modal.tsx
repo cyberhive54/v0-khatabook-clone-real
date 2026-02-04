@@ -22,13 +22,20 @@ export function EditTransactionModal({
   isLoading = false,
 }: EditTransactionModalProps) {
   const { addToast } = useToast()
-  const [formData, setFormData] = useState({
-    description: "",
-    you_give: 0,
-    you_got: 0,
-    transaction_date: "",
-    status: "unsettled",
-  })
+  const [formData, setFormData] = useState<{
+  description: string
+  you_give: number
+  you_got: number
+  transaction_date: string
+  status: "settled" | "unsettled"
+}>({
+  description: "",
+  you_give: 0,
+  you_got: 0,
+  transaction_date: "",
+  status: "unsettled",
+})
+
 
   useEffect(() => {
     if (transaction && isOpen) {
@@ -36,7 +43,7 @@ export function EditTransactionModal({
         description: transaction.description || "",
         you_give: transaction.you_give || 0,
         you_got: transaction.you_got || 0,
-        transaction_date: transaction.transaction_date || "",
+        transaction_date: transaction.date || "",
         status: transaction.status || "unsettled",
       })
     }

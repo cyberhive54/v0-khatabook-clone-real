@@ -22,6 +22,7 @@ export interface Transaction {
   date: string
   description: string
   notes: string
+  status: "settled" | "unsettled"
   bills?: Bill[]
   user_id?: string
 }

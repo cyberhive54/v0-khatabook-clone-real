@@ -21,13 +21,15 @@ export function AddContactModal({
 }: AddContactModalProps) {
   const { addToast } = useToast()
   const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    notes: "",
-    profile_pic: "",
-  })
+  name: "",
+  phone: "",
+  email: "",
+  address: "",
+  notes: "",
+  profile_pic: "",
+  balance: 0,
+})
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -53,7 +55,7 @@ export function AddContactModal({
   }
 
   const handleClose = () => {
-    setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "" })
+    setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "", balance: 0, })
     onClose()
   }
 

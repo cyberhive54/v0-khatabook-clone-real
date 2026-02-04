@@ -26,14 +26,24 @@ export default function TransactionsPage() {
   const [bills, setBills] = useState<Omit<Bill, "id" | "transaction_id">[]>([])
   const [filter, setFilter] = useState<FilterType>("all")
   const [sortBy, setSortBy] = useState<SortType>("most_recent")
-  const [formData, setFormData] = useState({
-    contact_id: "",
-    amount: 0,
-    transactionType: "give", // "give" or "got"
-    date: new Date().toISOString().split("T")[0],
-    description: "",
-    notes: "",
-  })
+  const [formData, setFormData] = useState<{
+  contact_id: string
+  amount: number
+  transactionType: string
+  date: string
+  description: string
+  notes: string
+  status: "settled" | "unsettled"
+}>({
+  contact_id: "",
+  amount: 0,
+  transactionType: "you_give",
+  date: "",
+  description: "",
+  notes: "",
+  status: "unsettled",
+})
+
 
   const handleBillUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -75,6 +85,7 @@ export default function TransactionsPage() {
         date: formData.date,
         description: formData.description,
         notes: formData.notes,
+        status: formData.status || "unsettled",
       }
 
       if (editingId) {
@@ -91,6 +102,7 @@ export default function TransactionsPage() {
         date: new Date().toISOString().split("T")[0],
         description: "",
         notes: "",
+        status: "unsettled",
       })
       setBills([])
       setShowForm(false)
@@ -107,6 +119,7 @@ export default function TransactionsPage() {
       date: transaction.date,
       description: transaction.description,
       notes: transaction.notes,
+      status: "unsettled",
     })
     setEditingId(transaction.id)
     setBills(transaction.bills || [])
@@ -215,6 +228,7 @@ export default function TransactionsPage() {
                   date: new Date().toISOString().split("T")[0],
                   description: "",
                   notes: "",
+                  status: "unsettled",
                 })
                 setBills([])
               }}
