@@ -77,8 +77,7 @@ export default function SettingsPage() {
               <UserProfileSection />
             </TabsContent>
 
-            <TabsContent value="preferences">
-
+            <TabsContent value="preferences" className="space-y-6">
               <Card className="p-4 md:p-6 bg-card border border-border space-y-6">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">App Name</label>

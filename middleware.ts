@@ -1,6 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Middleware for route protection and authentication
+ * This runs on every request to protect routes based on authentication status
+ */
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({
     request: {
