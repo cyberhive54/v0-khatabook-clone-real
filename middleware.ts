@@ -18,10 +18,7 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          return request.cookies.getSetCookie().map((cookie) => {
-            const [name, ...rest] = cookie.split("=");
-            return { name, value: rest.join("=") };
-          });
+          return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>

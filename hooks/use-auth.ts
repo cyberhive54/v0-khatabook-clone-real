@@ -95,7 +95,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    [supabase, router]
+    []
   )
 
   const signIn = useCallback(
@@ -122,7 +122,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    [supabase, router]
+    []
   )
 
   const signOut = useCallback(async () => {
@@ -145,7 +145,7 @@ export function useAuth() {
     } finally {
       setLoading(false)
     }
-  }, [supabase, router])
+  }, [])
 
   const resetPassword = useCallback(
     async (email: string, redirectUrl?: string) => {
@@ -168,7 +168,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    [supabase]
+    []
   )
 
   const updatePassword = useCallback(
@@ -192,7 +192,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    [supabase]
+    []
   )
 
   return {
