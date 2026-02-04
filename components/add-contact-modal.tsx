@@ -45,7 +45,6 @@ export function AddContactModal({
     try {
       await onSubmit(formData)
       addToast("Contact added successfully", "success")
-      setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "" })
       onClose()
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to add contact"
@@ -53,11 +52,16 @@ export function AddContactModal({
     }
   }
 
+  const handleClose = () => {
+    setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "" })
+    onClose()
+  }
+
   return (
     <ModalForm
       isOpen={isOpen}
       title="Add New Contact"
-      onClose={onClose}
+      onClose={handleClose}
       onSubmit={handleSubmit}
       isLoading={isLoading}
       submitButtonText="Add Contact"

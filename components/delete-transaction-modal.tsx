@@ -47,40 +47,38 @@ export function DeleteTransactionModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-sm mx-4 bg-card border border-border rounded-lg shadow-lg">
-        <div className="p-6">
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              <AlertCircle className="h-6 w-6 text-red-600" />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-foreground mb-2">Delete Transaction</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Are you sure you want to delete this transaction? This action cannot be undone.
-              </p>
-            </div>
+      <div className="relative w-full max-w-sm mx-4 bg-card border border-border rounded-lg shadow-lg p-6">
+        <div className="flex items-start gap-4 mb-6">
+          <div className="flex-shrink-0">
+            <AlertCircle className="h-6 w-6 text-destructive" />
           </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-foreground mb-2">Delete Transaction</h3>
+            <p className="text-sm text-muted-foreground">
+              Are you sure you want to delete this transaction? This action cannot be undone.
+            </p>
+          </div>
+        </div>
 
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isLoading}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isLoading}
-              className="flex-1"
-            >
-              {isLoading ? "Deleting..." : "Delete"}
-            </Button>
-          </div>
+        <div className="flex gap-2 pt-4 border-t border-border">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isLoading}
+            className="flex-1"
+          >
+            {isLoading ? "Deleting..." : "Delete"}
+          </Button>
         </div>
       </div>
     </div>
