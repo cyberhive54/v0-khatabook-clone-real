@@ -30,7 +30,14 @@ export function useContacts() {
   const { data, error, isLoading, mutate } = useSWR("contacts", fetchContacts)
 
   const addContact = async (contact: Omit<Contact, "id" | "user_id">) => {
-    const { data: newContact, error } = await supabase.from("contacts").insert([contact]).select()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) throw new Error("User not authenticated")
+
+    const { data: newContact, error } = await supabase
+      .from("contacts")
+      .insert([{ ...contact, user_id: user.id }])
+      .select()
 
     if (error) throw new Error(error.message)
     mutate()
