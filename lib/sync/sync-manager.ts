@@ -184,10 +184,18 @@ class SyncManager {
   private async syncFromSupabase() {
     const supabase = createBrowserClient()
 
+    // Get current user to ensure data isolation
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      await this.logSync('Sync', 'error', 'User not authenticated')
+      return
+    }
+
     await this.logSync('Download', 'pending', 'Downloading contacts...')
     const { data: contacts, error: contactsError } = await supabase
       .from('contacts')
       .select('*')
+      .eq('user_id', user.id)
       .order('updated_at', { ascending: false })
 
     if (contactsError) {
@@ -206,6 +214,7 @@ class SyncManager {
     const { data: transactions, error: transactionsError } = await supabase
       .from('transactions')
       .select('*')
+      .eq('user_id', user.id)
       .order('updated_at', { ascending: false })
 
     if (transactionsError) {

@@ -22,6 +22,7 @@ export interface Transaction {
   description: string
   notes: string
   bills?: Bill[]
+  user_id?: string
 }
 
 const supabase = createClient()

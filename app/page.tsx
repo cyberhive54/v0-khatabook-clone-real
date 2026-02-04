@@ -111,6 +111,20 @@ export default function Dashboard() {
         <AppHeader />
         <main className="p-4 md:p-8 max-w-7xl mx-auto w-full">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            {/* Net Balance - First Card */}
+            <Card className="p-6 bg-card border border-border md:col-span-1">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-muted-foreground text-sm">Net Balance</p>
+                  <p className={`text-2xl font-bold ${netBalance >= 0 ? "text-secondary" : "text-destructive"}`}>
+                    {isLoading ? "..." : formatCurrency(netBalance || 0, settings.currency)}
+                  </p>
+                </div>
+                <Wallet className={netBalance >= 0 ? "text-secondary" : "text-destructive"} size={32} />
+              </div>
+            </Card>
+
+            {/* You will get - Second Card */}
             <Card className="p-6 bg-card border border-border">
               <div className="flex items-center justify-between">
                 <div>
@@ -123,6 +137,7 @@ export default function Dashboard() {
               </div>
             </Card>
 
+            {/* You will give - Third Card */}
             <Card className="p-6 bg-card border border-border">
               <div className="flex items-center justify-between">
                 <div>
@@ -135,18 +150,7 @@ export default function Dashboard() {
               </div>
             </Card>
 
-            <Card className="p-6 bg-card border border-border">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-muted-foreground text-sm">Net Balance</p>
-                  <p className={`text-2xl font-bold ${netBalance >= 0 ? "text-secondary" : "text-destructive"}`}>
-                    {isLoading ? "..." : formatCurrency(netBalance || 0, settings.currency)}
-                  </p>
-                </div>
-                <Wallet className="text-accent" size={32} />
-              </div>
-            </Card>
-
+            {/* Total Contacts - Fourth Card */}
             <Card className="p-6 bg-card border border-border">
               <div className="flex items-center justify-between">
                 <div>

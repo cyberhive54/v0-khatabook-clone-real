@@ -13,11 +13,13 @@ export interface Contact {
   profile_pic?: string
   balance: number
   created_at?: string
+  user_id?: string
 }
 
 const supabase = createClient()
 
 async function fetchContacts(): Promise<Contact[]> {
+  // RLS policies will automatically filter by user_id
   const { data, error } = await supabase.from("contacts").select("*").order("created_at", { ascending: false })
 
   if (error) throw new Error(error.message)
@@ -27,7 +29,7 @@ async function fetchContacts(): Promise<Contact[]> {
 export function useContacts() {
   const { data, error, isLoading, mutate } = useSWR("contacts", fetchContacts)
 
-  const addContact = async (contact: Omit<Contact, "id">) => {
+  const addContact = async (contact: Omit<Contact, "id" | "user_id">) => {
     const { data: newContact, error } = await supabase.from("contacts").insert([contact]).select()
 
     if (error) throw new Error(error.message)
