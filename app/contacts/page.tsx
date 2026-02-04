@@ -87,7 +87,7 @@ export default function ContactsPage() {
             ))}
           </div>
 
-          {contacts.length === 0 && !showForm && (
+          {contacts.length === 0 && (
             <Card className="p-12 bg-card border border-border text-center">
               <p className="text-muted-foreground text-lg">No contacts yet. Add one to get started!</p>
             </Card>

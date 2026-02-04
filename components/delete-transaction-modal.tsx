@@ -1,0 +1,88 @@
+"use client"
+
+import React from "react"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/contexts/toast-context"
+import { AlertCircle } from "lucide-react"
+import type { Transaction } from "@/hooks/use-transactions"
+
+interface DeleteTransactionModalProps {
+  isOpen: boolean
+  onClose: () => void
+  transaction: Transaction | null
+  onConfirm: (id: string) => Promise<void>
+  isLoading?: boolean
+}
+
+export function DeleteTransactionModal({
+  isOpen,
+  onClose,
+  transaction,
+  onConfirm,
+  isLoading = false,
+}: DeleteTransactionModalProps) {
+  const { addToast } = useToast()
+
+  const handleDelete = async () => {
+    if (!transaction) return
+
+    try {
+      await onConfirm(transaction.id)
+      addToast("Transaction deleted successfully", "success")
+      onClose()
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to delete transaction"
+      addToast(message, "error")
+    }
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 transition-opacity"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <div className="relative w-full max-w-sm mx-4 bg-card border border-border rounded-lg shadow-lg">
+        <div className="p-6">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <AlertCircle className="h-6 w-6 text-red-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-foreground mb-2">Delete Transaction</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Are you sure you want to delete this transaction? This action cannot be undone.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isLoading}
+              className="flex-1"
+            >
+              {isLoading ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
