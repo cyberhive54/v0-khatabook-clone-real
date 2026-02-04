@@ -6,8 +6,10 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Navigation } from "@/components/navigation"
 import { AppHeader } from "@/components/app-header"
+import { UserProfileSection } from "@/components/user-profile-section"
 import { useState, useEffect } from "react"
 import { useSettings } from "@/hooks/use-settings"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function SettingsPage() {
   const { settings, saveSettings, debouncedSave, isLoading, isSaving } = useSettings()
@@ -62,10 +64,22 @@ export default function SettingsPage() {
       <Navigation />
       <div className="flex-1">
         <AppHeader />
-        <main className="p-4 md:p-6 lg:p-8 max-w-2xl mx-auto w-full">
+        <main className="p-4 md:p-6 lg:p-8 max-w-4xl mx-auto w-full">
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-6">Settings</h1>
 
-          <Card className="p-4 md:p-6 bg-card border border-border space-y-6">
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="profile">Profile & Security</TabsTrigger>
+              <TabsTrigger value="preferences">Preferences</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="profile" className="space-y-6">
+              <UserProfileSection />
+            </TabsContent>
+
+            <TabsContent value="preferences">
+
+              <Card className="p-4 md:p-6 bg-card border border-border space-y-6">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">App Name</label>
               <input
@@ -246,7 +260,9 @@ export default function SettingsPage() {
                 {isSaving ? "Saving..." : "Save Now"}
               </Button>
             </div>
-          </Card>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>
