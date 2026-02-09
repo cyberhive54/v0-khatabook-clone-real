@@ -1,15 +1,28 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
-import { Settings, LogOut, User, ChevronDown } from "lucide-react"
+import { useTheme } from "next-themes"
+import { Settings, LogOut, User, ChevronDown, Moon, Sun } from "lucide-react"
 import { Button } from "./ui/button"
 
 export function AppHeader() {
   const { user, signOut } = useAuth()
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const toggleTheme = () => {
+    if (mounted) {
+      setTheme(theme === 'dark' ? 'light' : 'dark')
+    }
+  }
 
   const handleSignOut = async () => {
     try {
@@ -48,13 +61,21 @@ export function AppHeader() {
           </Button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50">
+            <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
               <button
                 onClick={handleSettings}
                 className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center gap-2 transition-colors"
               >
                 <Settings size={16} />
                 Settings
+              </button>
+              <button
+                onClick={toggleTheme}
+                disabled={!mounted}
+                className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted flex items-center gap-2 transition-colors border-t border-border disabled:opacity-50"
+              >
+                {mounted && (theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />)}
+                {mounted && (theme === 'dark' ? 'Light Mode' : 'Dark Mode')}
               </button>
               <button
                 onClick={handleSignOut}

@@ -16,11 +16,11 @@ import { ContactDetailModal } from "@/components/contact-detail-modal"
 import { AddContactModal } from "@/components/add-contact-modal"
 import { EditContactModal } from "@/components/edit-contact-modal"
 import { DeleteContactModal } from "@/components/delete-contact-modal"
-import { Trash2, Edit2, Plus, Eye } from "lucide-react"
+import { Trash2, Edit2, Plus, Eye, Loader2 } from "lucide-react"
 import { formatCurrency } from "@/lib/currency-utils"
 
 export default function ContactsPage() {
-  const { contacts, addContact, deleteContact, updateContact, operationLoading } = useContacts()
+  const { contacts, addContact, deleteContact, updateContact, operationLoading, isLoading } = useContacts()
   const { settings } = useSettings()
   const { addToast } = useToast()
   const [showAddModal, setShowAddModal] = useState(false)
@@ -73,24 +73,35 @@ export default function ContactsPage() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {contacts.map((contact) => (
-              <ContactCard
-                key={contact.id}
-                contact={contact}
-                onView={handleViewDetails}
-                onEdit={handleEdit}
-                onDeleteClick={handleDeleteClick}
-                getInitials={getInitials}
-                settings={settings}
-              />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
+                <p className="text-muted-foreground">Loading contacts...</p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {contacts.map((contact) => (
+                  <ContactCard
+                    key={contact.id}
+                    contact={contact}
+                    onView={handleViewDetails}
+                    onEdit={handleEdit}
+                    onDeleteClick={handleDeleteClick}
+                    getInitials={getInitials}
+                    settings={settings}
+                  />
+                ))}
+              </div>
 
-          {contacts.length === 0 && (
-            <Card className="p-12 bg-card border border-border text-center">
-              <p className="text-muted-foreground text-lg">No contacts yet. Add one to get started!</p>
-            </Card>
+              {contacts.length === 0 && (
+                <Card className="p-12 bg-card border border-border text-center">
+                  <p className="text-muted-foreground text-lg">No contacts yet. Add one to get started!</p>
+                </Card>
+              )}
+            </>
           )}
         </main>
       </div>

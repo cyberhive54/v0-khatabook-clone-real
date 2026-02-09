@@ -25,7 +25,7 @@ export function ExportTransactionsModal({ isOpen, onClose }: ExportTransactionsM
   }
 
   const exportToCSV = () => {
-    const headers = ['contact_name', 'you_give', 'you_got', 'date', 'description', 'notes']
+    const headers = ['contact_name', 'you_give', 'you_got', 'date', 'description', 'notes', 'bills_count']
     const rows = transactions.map((t) => [
       getContactName(t.contact_id),
       t.you_give || 0,
@@ -33,6 +33,7 @@ export function ExportTransactionsModal({ isOpen, onClose }: ExportTransactionsM
       t.date,
       t.description || '',
       t.notes || '',
+      t.bills?.length || 0,
     ])
 
     const csv = [headers, ...rows]
@@ -51,6 +52,10 @@ export function ExportTransactionsModal({ isOpen, onClose }: ExportTransactionsM
       date: t.date,
       description: t.description || '',
       notes: t.notes || '',
+      bills: t.bills?.map((b) => ({
+        bill_number: b.bill_number || '',
+        image_url: b.image_url || '',
+      })) || [],
     }))
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
@@ -66,6 +71,29 @@ export function ExportTransactionsModal({ isOpen, onClose }: ExportTransactionsM
     a.click()
     window.URL.revokeObjectURL(url)
     document.body.removeChild(a)
+  }
+
+  const downloadTemplate = () => {
+    if (exportFormat === 'csv') {
+      const template = 'contact_name,you_give,you_got,date,description,notes,bills_count\n"John Doe",100,0,2026-02-09,"Coffee meeting","Personal","0"'
+      const blob = new Blob([template], { type: 'text/csv' })
+      downloadFile(blob, 'transaction-template.csv')
+    } else {
+      const template = [
+        {
+          contact_name: 'John Doe',
+          you_give: 100,
+          you_got: 0,
+          date: '2026-02-09',
+          description: 'Coffee meeting',
+          notes: 'Personal',
+          bills: [],
+        },
+      ]
+      const blob = new Blob([JSON.stringify(template, null, 2)], { type: 'application/json' })
+      downloadFile(blob, 'transaction-template.json')
+    }
+    addToast('Template downloaded successfully', 'success')
   }
 
   const handleExport = async () => {
@@ -155,6 +183,16 @@ export function ExportTransactionsModal({ isOpen, onClose }: ExportTransactionsM
                 : 'JSON format includes all transaction data in a structured format for data analysis.'}
             </p>
           </Card>
+
+          {/* Download Template */}
+          <Button
+            onClick={downloadTemplate}
+            variant="outline"
+            className="w-full border-border"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Download {exportFormat.toUpperCase()} Template
+          </Button>
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-4">
