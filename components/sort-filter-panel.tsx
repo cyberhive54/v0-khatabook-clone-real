@@ -9,7 +9,19 @@ interface SortFilterPanelProps {
   onSortChange: (sort: SortBy) => void
 }
 
-const sortOptions = [
+interface SortOption {
+  value: SortBy
+  label: string
+}
+
+interface SortGroup {
+  label: string
+  options: SortOption[]
+}
+
+type SortOptionType = SortOption | SortGroup
+
+const sortOptions: SortOptionType[] = [
   { value: "all", label: "All" },
   { label: "Name", options: [
     { value: "name-az", label: "A to Z" },
@@ -33,7 +45,7 @@ export function SortFilterPanel({ sortBy, onSortChange }: SortFilterPanelProps) 
   const getCurrentLabel = () => {
     if (sortBy === "all") return "All"
     for (const group of sortOptions) {
-      if ("options" in group) {
+      if ("options" in group && group.options) {
         const found = group.options.find((opt) => opt.value === sortBy)
         if (found) return `${group.label}: ${found.label}`
       }
