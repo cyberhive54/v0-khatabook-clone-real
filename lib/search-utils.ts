@@ -49,12 +49,47 @@ export function smartSearch<T extends Record<string, any>>(
   return results.sort((a, b) => b.score - a.score)
 }
 
-export function highlightText(text: string, query: string): React.ReactNode[] {
-  if (!query.trim()) return [text]
+export function getHighlightParts(text: string, query: string): Array<{ text: string; isMatch: boolean }> {
+  if (!query.trim()) return [{ text, isMatch: false }]
 
-  const parts: React.ReactNode[] = []
+  const parts: Array<{ text: string; isMatch: boolean }> = []
   const lowerQuery = query.toLowerCase()
   const lowerText = text.toLowerCase()
+
+  let lastIndex = 0
+  let currentIndex = 0
+
+  while (currentIndex < lowerText.length) {
+    const matchIndex = lowerText.indexOf(lowerQuery, currentIndex)
+
+    if (matchIndex === -1) {
+      if (lastIndex < text.length) {
+        parts.push({ text: text.substring(lastIndex), isMatch: false })
+      }
+      break
+    }
+
+    // Add text before match
+    if (matchIndex > lastIndex) {
+      parts.push({ text: text.substring(lastIndex, matchIndex), isMatch: false })
+    }
+
+    // Add highlighted match
+    parts.push({ text: text.substring(matchIndex, matchIndex + query.length), isMatch: true })
+
+    lastIndex = matchIndex + query.length
+    currentIndex = lastIndex
+  }
+
+  return parts
+}
+
+export function highlightText(text: string, query: string): string {
+  if (!query.trim()) return text
+
+  const lowerQuery = query.toLowerCase()
+  const lowerText = text.toLowerCase()
+  const parts: string[] = []
 
   let lastIndex = 0
   let currentIndex = 0
@@ -74,18 +109,14 @@ export function highlightText(text: string, query: string): React.ReactNode[] {
       parts.push(text.substring(lastIndex, matchIndex))
     }
 
-    // Add highlighted match
-    parts.push(
-      <span key={matchIndex} className="bg-yellow-200 dark:bg-yellow-900 font-semibold">
-        {text.substring(matchIndex, matchIndex + query.length)}
-      </span>
-    )
+    // Add match with markers (will be replaced in JSX)
+    parts.push(`**${text.substring(matchIndex, matchIndex + query.length)}**`)
 
     lastIndex = matchIndex + query.length
     currentIndex = lastIndex
   }
 
-  return parts
+  return parts.join("")
 }
 
 export function sortContacts<T extends Record<string, any>>(

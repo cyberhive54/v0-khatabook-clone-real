@@ -20,9 +20,10 @@ import { DeleteContactModal } from "@/components/delete-contact-modal"
 import { ViewSwitcher } from "@/components/view-switcher"
 import { SmartSearchInput } from "@/components/smart-search-input"
 import { SortFilterPanel } from "@/components/sort-filter-panel"
+import { HighlightedText } from "@/components/highlighted-text"
 import { Trash2, Edit2, Plus, Eye, Loader2 } from "lucide-react"
 import { formatCurrency } from "@/lib/currency-utils"
-import { smartSearch, highlightText, sortContacts } from "@/lib/search-utils"
+import { smartSearch, sortContacts } from "@/lib/search-utils"
 
 type ViewType = "card" | "list" | "grid"
 type SortBy = "name-az" | "name-za" | "added-latest" | "added-oldest" | "balance-highest" | "balance-lowest" | "transaction-latest" | "transaction-oldest" | "all"
@@ -185,7 +186,7 @@ export default function ContactsPage() {
                                 </Avatar>
                                 <div>
                                   <p className="text-sm font-medium text-foreground">
-                                    {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
+                                    {searchQuery ? <HighlightedText text={contact.name} query={searchQuery} /> : contact.name}
                                   </p>
                                 </div>
                               </div>
@@ -307,7 +308,7 @@ function ContactCard({
             <AvatarFallback>{getInitials(contact.name)}</AvatarFallback>
           </Avatar>
           <h3 className="text-lg font-semibold text-foreground">
-            {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
+            {searchQuery ? <HighlightedText text={contact.name} query={searchQuery} /> : contact.name}
           </h3>
         </div>
         <div className="flex gap-2">
@@ -371,9 +372,9 @@ function ContactGridCard({
           </button>
         </div>
       </div>
-      <h3 className="text-sm font-semibold text-foreground truncate mb-2">
-        {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
-      </h3>
+                      <h3 className="text-sm font-semibold text-foreground truncate mb-2">
+                        {searchQuery ? <HighlightedText text={contact.name} query={searchQuery} /> : contact.name}
+                      </h3>
       <p className={`text-xs font-semibold ${balance >= 0 ? "text-secondary" : "text-destructive"}`}>
         {formatCurrency(balance, settings.currency)}
       </p>

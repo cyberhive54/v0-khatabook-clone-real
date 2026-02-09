@@ -24,7 +24,6 @@ import { DateFilterDropdown, type DateRange } from "@/components/date-filter-dro
 import { BulkSelectToolbar } from "@/components/bulk-select-toolbar"
 import { PaginationControls } from "@/components/pagination-controls"
 import { Plus, X, ImageIcon, ChevronDown, Edit2, Trash2, Download, Upload, Search } from "lucide-react"
-import { smartSearch, highlightText } from "@/lib/search-utils"
 
 type FilterType = "all" | "you_got" | "you_give" | "settled_up"
 type SortType = "most_recent" | "highest_amount" | "oldest" | "least_amount" | "contact"

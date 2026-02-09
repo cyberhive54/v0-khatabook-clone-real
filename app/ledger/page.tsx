@@ -15,11 +15,12 @@ import { BillViewerModal } from "@/components/bill-viewer-modal"
 import { ViewSwitcher } from "@/components/view-switcher"
 import { SmartSearchInput } from "@/components/smart-search-input"
 import { SortFilterPanel } from "@/components/sort-filter-panel"
+import { HighlightedText } from "@/components/highlighted-text"
 import { format } from "date-fns"
 import { Edit2, Trash2, ImageIcon, Loader2 } from "lucide-react"
 import { useSettings } from "@/hooks/use-settings"
 import { formatCurrency } from "@/lib/currency-utils"
-import { smartSearch, highlightText, sortContacts } from "@/lib/search-utils"
+import { smartSearch, sortContacts } from "@/lib/search-utils"
 
 type ViewType = "card" | "list" | "grid"
 type SortBy = "name-az" | "name-za" | "added-latest" | "added-oldest" | "balance-highest" | "balance-lowest" | "transaction-latest" | "transaction-oldest" | "all"
@@ -177,7 +178,7 @@ export default function LedgerPage() {
                               <AvatarFallback>{getInitials(contact.name)}</AvatarFallback>
                             </Avatar>
                             <h3 className="text-lg font-semibold text-foreground">
-                              {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
+                              {searchQuery ? <HighlightedText text={contact.name} query={searchQuery} /> : contact.name}
                             </h3>
                           </div>
                           <p className="text-sm text-muted-foreground">{contact.email}</p>
@@ -201,7 +202,7 @@ export default function LedgerPage() {
                             <AvatarFallback className="text-xs">{getInitials(contact.name)}</AvatarFallback>
                           </Avatar>
                           <p className="text-sm font-semibold text-foreground truncate w-full">
-                            {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
+                            {searchQuery ? <HighlightedText text={contact.name} query={searchQuery} /> : contact.name}
                           </p>
                         </button>
                       ))}
@@ -239,7 +240,7 @@ export default function LedgerPage() {
                                       <AvatarFallback className="text-xs">{getInitials(contact.name)}</AvatarFallback>
                                     </Avatar>
                                     <p className="text-sm font-medium text-foreground">
-                                      {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
+                                      {searchQuery ? <HighlightedText text={contact.name} query={searchQuery} /> : contact.name}
                                     </p>
                                   </div>
                                 </td>
