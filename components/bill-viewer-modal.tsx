@@ -91,7 +91,7 @@ export function BillViewerModal({ isOpen, onClose, bill }: BillViewerModalProps)
 
         {/* Image */}
         <div className="px-4 pb-4">
-          {bill.image_url && (
+          {bill.image_url ? (
             <div className="bg-muted rounded-lg overflow-hidden border border-border">
               <img
                 src={bill.image_url}
