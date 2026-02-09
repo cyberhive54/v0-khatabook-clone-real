@@ -73,14 +73,14 @@ export default function LedgerPage() {
       .slice(0, 2)
   }
 
-  const getContactBalance = (contactId: string): number => {
+  const getContactBalanceForSort = (contact: typeof contacts[0]): number => {
     return transactions
-      .filter((t) => t.contact_id === contactId)
+      .filter((t) => t.contact_id === contact.id)
       .reduce((sum, t) => sum + (t.you_got || 0) - (t.you_give || 0), 0)
   }
 
-  const getContactTransactionCount = (contactId: string): number => {
-    return transactions.filter((t) => t.contact_id === contactId).length
+  const getContactTransactionCountForSort = (contact: typeof contacts[0]): number => {
+    return transactions.filter((t) => t.contact_id === contact.id).length
   }
 
   const searchResults = useMemo(() => {
@@ -89,8 +89,8 @@ export default function LedgerPage() {
   }, [contacts, searchQuery])
 
   const sortedContacts = useMemo(() => {
-    return sortContacts(searchResults, sortBy, getContactBalance, getContactTransactionCount)
-  }, [searchResults, sortBy])
+    return sortContacts(searchResults, sortBy, getContactBalanceForSort, getContactTransactionCountForSort)
+  }, [searchResults, sortBy, transactions])
 
   const handleAddTransaction = (type: "give" | "got") => {
     if (!selectedContact) return
@@ -223,8 +223,8 @@ export default function LedgerPage() {
                         </thead>
                         <tbody>
                           {sortedContacts.map((contact) => {
-                            const balance = getContactBalance(contact.id)
-                            const txCount = getContactTransactionCount(contact.id)
+                            const balance = getContactBalanceForSort(contact)
+                            const txCount = getContactTransactionCountForSort(contact)
                             return (
                               <tr
                                 key={contact.id}

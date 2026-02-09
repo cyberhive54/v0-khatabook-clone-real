@@ -69,14 +69,14 @@ export default function ContactsPage() {
 
   const currentDetailContact = contacts.find((c) => c.id === selectedContactId)
 
-  const getContactBalance = (contactId: string): number => {
+  const getContactBalance = (contact: Contact): number => {
     return transactions
-      .filter((t) => t.contact_id === contactId)
+      .filter((t) => t.contact_id === contact.id)
       .reduce((sum, t) => sum + (t.you_got || 0) - (t.you_give || 0), 0)
   }
 
-  const getContactTransactionCount = (contactId: string): number => {
-    return transactions.filter((t) => t.contact_id === contactId).length
+  const getContactTransactionCount = (contact: Contact): number => {
+    return transactions.filter((t) => t.contact_id === contact.id).length
   }
 
   const searchResults = useMemo(() => {
@@ -86,7 +86,7 @@ export default function ContactsPage() {
 
   const sortedContacts = useMemo(() => {
     return sortContacts(searchResults, sortBy, getContactBalance, getContactTransactionCount)
-  }, [searchResults, sortBy])
+  }, [searchResults, sortBy, transactions])
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background">
@@ -175,7 +175,7 @@ export default function ContactsPage() {
                     </thead>
                     <tbody>
                       {sortedContacts.map((contact) => {
-                        const balance = getContactBalance(contact.id)
+                        const balance = getContactBalance(contact)
                         return (
                           <tr key={contact.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                             <td className="px-6 py-4">
@@ -193,8 +193,8 @@ export default function ContactsPage() {
                             </td>
                             <td className="px-6 py-4 text-sm text-muted-foreground">{contact.phone || "-"}</td>
                             <td className="px-6 py-4 text-sm text-muted-foreground">{contact.email || "-"}</td>
-                            <td className={`px-6 py-4 text-sm font-semibold text-right ${balance >= 0 ? "text-secondary" : "text-destructive"}`}>
-                              {formatCurrency(balance, settings.currency)}
+                            <td className={`px-6 py-4 text-sm font-semibold text-right ${getContactBalance(contact) >= 0 ? "text-secondary" : "text-destructive"}`}>
+                              {formatCurrency(getContactBalance(contact), settings.currency)}
                             </td>
                             <td className="px-6 py-4 text-center">
                               <div className="flex gap-2 justify-center">
