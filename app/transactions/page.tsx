@@ -15,7 +15,10 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { AddTransactionModal } from "@/components/add-transaction-modal"
 import { EditTransactionModal } from "@/components/edit-transaction-modal"
 import { DeleteTransactionModal } from "@/components/delete-transaction-modal"
-import { Plus, X, ImageIcon, ChevronDown, Edit2, Trash2 } from "lucide-react"
+import { BillViewerModal } from "@/components/bill-viewer-modal"
+import { ImportTransactionsModal } from "@/components/import-transactions-modal"
+import { ExportTransactionsModal } from "@/components/export-transactions-modal"
+import { Plus, X, ImageIcon, ChevronDown, Edit2, Trash2, Download, Upload } from "lucide-react"
 
 type FilterType = "all" | "you_got" | "you_give" | "settled_up"
 type SortType = "most_recent" | "highest_amount" | "oldest" | "least_amount"
@@ -28,6 +31,10 @@ export default function TransactionsPage() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null)
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null)
+  const [billViewerOpen, setBillViewerOpen] = useState(false)
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [showExportModal, setShowExportModal] = useState(false)
   const [filter, setFilter] = useState<FilterType>("all")
   const [sortBy, setSortBy] = useState<SortType>("most_recent")
 
@@ -39,6 +46,11 @@ export default function TransactionsPage() {
   const handleDeleteClick = (transaction: any) => {
     setSelectedTransaction(transaction)
     setShowDeleteModal(true)
+  }
+
+  const handleBillClick = (bill: Bill) => {
+    setSelectedBill(bill)
+    setBillViewerOpen(true)
   }
 
   const getContactName = (id: string) => {
@@ -122,15 +134,33 @@ export default function TransactionsPage() {
       <div className="flex-1">
         <AppHeader />
         <main className="p-4 md:p-8 max-w-7xl mx-auto w-full">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
             <h1 className="text-3xl font-bold text-foreground">Transactions</h1>
-            <Button
-              onClick={() => setShowAddModal(true)}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Plus size={20} className="mr-2" />
-              Add Transaction
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowImportModal(true)}
+                variant="outline"
+                className="border-border"
+              >
+                <Upload size={20} className="mr-2" />
+                Import
+              </Button>
+              <Button
+                onClick={() => setShowExportModal(true)}
+                variant="outline"
+                className="border-border"
+              >
+                <Download size={20} className="mr-2" />
+                Export
+              </Button>
+              <Button
+                onClick={() => setShowAddModal(true)}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <Plus size={20} className="mr-2" />
+                Add Transaction
+              </Button>
+            </div>
           </div>
 
           <div className="flex gap-4 mb-6 flex-wrap items-center">
@@ -224,13 +254,18 @@ export default function TransactionsPage() {
                           {t.bills && t.bills.length > 0 && (
                             <div className="flex gap-2 flex-wrap">
                               {t.bills.map((bill: any) => (
-                                <img
+                                <button
                                   key={bill.id}
-                                  src={bill.image_url || "/placeholder.svg"}
-                                  alt="Bill"
-                                  className="h-12 w-12 object-cover rounded border border-border"
+                                  onClick={() => handleBillClick(bill)}
+                                  className="hover:scale-110 transition-transform cursor-pointer"
                                   title={`Bill: ${bill.bill_number || "Unnamed"}`}
-                                />
+                                >
+                                  <img
+                                    src={bill.image_url || "/placeholder.svg"}
+                                    alt="Bill"
+                                    className="h-12 w-12 object-cover rounded border border-border hover:border-primary"
+                                  />
+                                </button>
                               ))}
                             </div>
                           )}
@@ -300,6 +335,25 @@ export default function TransactionsPage() {
         transaction={selectedTransaction}
         onConfirm={deleteTransaction}
         isLoading={false}
+      />
+
+      <BillViewerModal
+        isOpen={billViewerOpen}
+        onClose={() => {
+          setBillViewerOpen(false)
+          setSelectedBill(null)
+        }}
+        bill={selectedBill}
+      />
+
+      <ImportTransactionsModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+      />
+
+      <ExportTransactionsModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
       />
     </div>
   )

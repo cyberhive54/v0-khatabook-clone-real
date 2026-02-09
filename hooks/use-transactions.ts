@@ -155,6 +155,26 @@ export function useTransactions() {
   }
   }
 
+  const deleteAllTransactions = async () => {
+    setOperationLoading(true)
+    setOperationError(null)
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .neq("id", "") // Delete all rows (non-null condition)
+
+      if (error) throw new Error(error.message)
+      mutate()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to delete all transactions"
+      setOperationError(message)
+      throw err
+    } finally {
+      setOperationLoading(false)
+    }
+  }
+
   return {
     transactions: data || [],
     isLoading,
@@ -166,5 +186,6 @@ export function useTransactions() {
     updateTransaction,
     addBillToTransaction,
     deleteBill,
+    deleteAllTransactions,
   }
 }

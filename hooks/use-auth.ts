@@ -195,6 +195,41 @@ export function useAuth() {
     []
   )
 
+  const deleteAccount = useCallback(
+    async (password: string) => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        // First verify the password by signing in
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: user?.email || '',
+          password,
+        })
+
+        if (signInError) {
+          throw new Error('Invalid password. Please try again.')
+        }
+
+        // Delete the user account
+        const { error: deleteError } = await supabase.auth.admin.deleteUser(user?.id || '')
+
+        if (deleteError) {
+          throw deleteError
+        }
+
+        setUser(null)
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete account'
+        setError(errorMessage)
+        throw err
+      } finally {
+        setLoading(false)
+      }
+    },
+    [user]
+  )
+
   return {
     user,
     loading,
@@ -204,5 +239,6 @@ export function useAuth() {
     signOut,
     resetPassword,
     updatePassword,
+    deleteAccount,
   }
 }

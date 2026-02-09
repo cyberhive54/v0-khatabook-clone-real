@@ -5,10 +5,10 @@ import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { LogOut, Mail, Lock, AlertCircle, Check } from 'lucide-react'
+import { Mail, Lock, AlertCircle, Check } from 'lucide-react'
 
 export function UserProfileSection() {
-  const { user, signOut, updatePassword, loading } = useAuth()
+  const { user, updatePassword, loading } = useAuth()
   const [isChangingPassword, setIsChangingPassword] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -52,14 +52,6 @@ export function UserProfileSection() {
       setPasswordError(errorMessage)
     } finally {
       setIsSubmitting(false)
-    }
-  }
-
-  const handleSignOut = async () => {
-    try {
-      await signOut()
-    } catch (err) {
-      console.error('Sign out error:', err)
     }
   }
 
@@ -209,26 +201,7 @@ export function UserProfileSection() {
         )}
       </Card>
 
-      {/* Danger Zone */}
-      <Card className="p-6 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-red-900 dark:text-red-100 mb-1">Danger Zone</h2>
-          <p className="text-sm text-red-700 dark:text-red-300">Irreversible actions</p>
-        </div>
 
-        <Button
-          onClick={handleSignOut}
-          disabled={loading}
-          className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white"
-        >
-          <LogOut className="w-4 h-4" />
-          Sign Out
-        </Button>
-
-        <p className="text-xs text-red-600 dark:text-red-400 mt-3">
-          You will be signed out from this account. You can sign back in anytime with your credentials.
-        </p>
-      </Card>
     </div>
   )
 }

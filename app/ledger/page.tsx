@@ -11,6 +11,7 @@ import { AppHeader } from "@/components/app-header"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { AddTransactionModal } from "@/components/add-transaction-modal"
 import { EditTransactionModal } from "@/components/edit-transaction-modal"
+import { BillViewerModal } from "@/components/bill-viewer-modal"
 import { format } from "date-fns"
 import { Edit2, Trash2, ImageIcon } from "lucide-react"
 import { useSettings } from "@/hooks/use-settings"
@@ -25,6 +26,8 @@ export default function LedgerPage() {
   const [transactionModalOpen, setTransactionModalOpen] = useState(false)
   const [modalType, setModalType] = useState<"give" | "got" | null>(null)
   const [editingTransaction, setEditingTransaction] = useState<any>(null)
+  const [selectedBill, setSelectedBill] = useState<any>(null)
+  const [billViewerOpen, setBillViewerOpen] = useState(false)
 
   useEffect(() => {
     const contactParam = searchParams.get("contact")
@@ -86,6 +89,11 @@ export default function LedgerPage() {
   const handleEditTransactionSubmit = async (id: string, transaction: Partial<Transaction>, bills: Omit<Bill, "id" | "transaction_id">[]) => {
     await updateTransaction(id, transaction, bills)
     setTransactionModalOpen(false)
+  }
+
+  const handleBillClick = (bill: Bill) => {
+    setSelectedBill(bill)
+    setBillViewerOpen(true)
   }
 
   const contactTransactions = selectedContact ? getContactTransactions(selectedContact.id) : []
@@ -220,7 +228,13 @@ export default function LedgerPage() {
                                 <div className="flex items-center gap-2">
                                   <span className="truncate">{t.description || "-"}</span>
                                   {t.bills && t.bills.length > 0 && (
-                                  <ImageIcon size={16} className="text-muted-foreground flex-shrink-0" />
+                                    <button
+                                      onClick={() => handleBillClick(t.bills[0])}
+                                      className="p-1 hover:bg-muted rounded transition-colors"
+                                      title={`${t.bills.length} bill(s) attached`}
+                                    >
+                                      <ImageIcon size={16} className="text-primary hover:text-primary/80 flex-shrink-0" />
+                                    </button>
                                   )}
                                 </div>
                               </td>
@@ -285,6 +299,15 @@ export default function LedgerPage() {
               disableTypeChange={true}
             />
           )}
+
+          <BillViewerModal
+            isOpen={billViewerOpen}
+            onClose={() => {
+              setBillViewerOpen(false)
+              setSelectedBill(null)
+            }}
+            bill={selectedBill}
+          />
         </main>
       </div>
     </div>

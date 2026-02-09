@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Navigation } from "@/components/navigation"
 import { AppHeader } from "@/components/app-header"
 import { UserProfileSection } from "@/components/user-profile-section"
+import { DeleteAccountModal } from "@/components/delete-account-modal"
 import { useState, useEffect } from "react"
 import { useSettings } from "@/hooks/use-settings"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,6 +17,7 @@ export default function SettingsPage() {
   const { settings, saveSettings, debouncedSave, isLoading, isSaving } = useSettings()
   const [formData, setFormData] = useState(settings)
   const [saved, setSaved] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
 
   useEffect(() => {
     setFormData(settings)
@@ -293,19 +295,13 @@ export default function SettingsPage() {
                         <h3 className="text-sm font-bold text-foreground">Delete Account</h3>
                         <p className="text-xs text-muted-foreground mt-1">Permanently delete your account and all associated data</p>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 px-2.5 py-1 rounded-full">
-                          Coming Soon
-                        </span>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          disabled
-                          className="opacity-50 cursor-not-allowed"
-                        >
-                          Delete
-                        </Button>
-                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setDeleteModalOpen(true)}
+                      >
+                        Delete Account
+                      </Button>
                     </div>
                   </Card>
                 </div>
@@ -314,6 +310,11 @@ export default function SettingsPage() {
           </Tabs>
         </main>
       </div>
+      
+      <DeleteAccountModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+      />
     </div>
   )
 }

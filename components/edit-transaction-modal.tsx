@@ -159,7 +159,7 @@ export function EditTransactionModal({
         notes: formData.notes,
       }
 
-      const allBills = [...newBills]
+      const allBills = [...bills, ...newBills]
 
       await onSubmit(transaction.id, transactionData, allBills)
       addToast("Transaction updated successfully", "success")
