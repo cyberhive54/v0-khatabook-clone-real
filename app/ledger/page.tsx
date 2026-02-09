@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useContacts } from "@/hooks/use-contacts"
 import { useTransactions, type Transaction, type Bill } from "@/hooks/use-transactions"
 import { useSearchParams } from "next/navigation"
@@ -12,15 +12,22 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { AddTransactionModal } from "@/components/add-transaction-modal"
 import { EditTransactionModal } from "@/components/edit-transaction-modal"
 import { BillViewerModal } from "@/components/bill-viewer-modal"
+import { ViewSwitcher } from "@/components/view-switcher"
+import { SmartSearchInput } from "@/components/smart-search-input"
+import { SortFilterPanel } from "@/components/sort-filter-panel"
 import { format } from "date-fns"
-import { Edit2, Trash2, ImageIcon } from "lucide-react"
+import { Edit2, Trash2, ImageIcon, Loader2 } from "lucide-react"
 import { useSettings } from "@/hooks/use-settings"
 import { formatCurrency } from "@/lib/currency-utils"
+import { smartSearch, highlightText, sortContacts } from "@/lib/search-utils"
+
+type ViewType = "card" | "list" | "grid"
+type SortBy = "name-az" | "name-za" | "added-latest" | "added-oldest" | "balance-highest" | "balance-lowest" | "transaction-latest" | "transaction-oldest" | "all"
 
 export default function LedgerPage() {
   const searchParams = useSearchParams()
   const { contacts } = useContacts()
-  const { transactions, deleteTransaction, addTransaction, updateTransaction, operationLoading } = useTransactions()
+  const { transactions, deleteTransaction, addTransaction, updateTransaction, operationLoading, isLoading } = useTransactions()
   const { settings } = useSettings()
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const [transactionModalOpen, setTransactionModalOpen] = useState(false)
@@ -28,6 +35,9 @@ export default function LedgerPage() {
   const [editingTransaction, setEditingTransaction] = useState<any>(null)
   const [selectedBill, setSelectedBill] = useState<any>(null)
   const [billViewerOpen, setBillViewerOpen] = useState(false)
+  const [view, setView] = useState<ViewType>("card")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortBy, setSortBy] = useState<SortBy>("added-latest")
 
   useEffect(() => {
     const contactParam = searchParams.get("contact")
@@ -61,6 +71,25 @@ export default function LedgerPage() {
       .toUpperCase()
       .slice(0, 2)
   }
+
+  const getContactBalance = (contactId: string): number => {
+    return transactions
+      .filter((t) => t.contact_id === contactId)
+      .reduce((sum, t) => sum + (t.you_got || 0) - (t.you_give || 0), 0)
+  }
+
+  const getContactTransactionCount = (contactId: string): number => {
+    return transactions.filter((t) => t.contact_id === contactId).length
+  }
+
+  const searchResults = useMemo(() => {
+    const results = smartSearch(contacts, searchQuery, ["name", "phone", "email"])
+    return results.map((r) => r.item)
+  }, [contacts, searchQuery])
+
+  const sortedContacts = useMemo(() => {
+    return sortContacts(searchResults, sortBy, getContactBalance, getContactTransactionCount)
+  }, [searchResults, sortBy])
 
   const handleAddTransaction = (type: "give" | "got") => {
     if (!selectedContact) return
@@ -109,31 +138,135 @@ export default function LedgerPage() {
 
           {/* Contact Selector */}
           {!selectedContactId && (
-            <Card className="p-6 bg-card border border-border mb-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Select Contact</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                {contacts.map((contact) => (
-                  <button
-                    key={contact.id}
-                    onClick={() => setSelectedContactId(contact.id)}
-                    className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors text-left group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="size-12">
-                        {contact.profile_pic && (
-                          <AvatarImage src={contact.profile_pic || "/placeholder.svg"} alt={contact.name} />
-                        )}
-                        <AvatarFallback>{getInitials(contact.name)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium text-foreground">{contact.name}</p>
-                        <p className="text-xs text-muted-foreground">{contact.email}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+            <>
+              {/* Search and Filters */}
+              <div className="flex gap-4 mb-6 flex-wrap items-center justify-between">
+                <SmartSearchInput
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search by name, phone, or email..."
+                />
+                <div className="flex gap-4 items-center flex-wrap">
+                  <SortFilterPanel sortBy={sortBy} onSortChange={setSortBy} />
+                  <ViewSwitcher currentView={view} onViewChange={setView} />
+                </div>
               </div>
-            </Card>
+
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-primary mx-auto mb-3 animate-spin" />
+                    <p className="text-muted-foreground">Loading contacts...</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {view === "card" && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                      {sortedContacts.map((contact) => (
+                        <button
+                          key={contact.id}
+                          onClick={() => setSelectedContactId(contact.id)}
+                          className="text-left p-6 bg-card border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 mb-3">
+                            <Avatar className="size-12">
+                              {contact.profile_pic && (
+                                <AvatarImage src={contact.profile_pic || "/placeholder.svg"} alt={contact.name} />
+                              )}
+                              <AvatarFallback>{getInitials(contact.name)}</AvatarFallback>
+                            </Avatar>
+                            <h3 className="text-lg font-semibold text-foreground">
+                              {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
+                            </h3>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{contact.email}</p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {view === "grid" && (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                      {sortedContacts.map((contact) => (
+                        <button
+                          key={contact.id}
+                          onClick={() => setSelectedContactId(contact.id)}
+                          className="text-left p-4 bg-card border border-border rounded-lg hover:bg-muted/50 transition-colors flex flex-col items-center text-center"
+                        >
+                          <Avatar className="size-10 mb-2">
+                            {contact.profile_pic && (
+                              <AvatarImage src={contact.profile_pic || "/placeholder.svg"} alt={contact.name} />
+                            )}
+                            <AvatarFallback className="text-xs">{getInitials(contact.name)}</AvatarFallback>
+                          </Avatar>
+                          <p className="text-sm font-semibold text-foreground truncate w-full">
+                            {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {view === "list" && (
+                    <div className="bg-card border border-border rounded-lg overflow-x-auto mb-6">
+                      <table className="w-full">
+                        <thead className="bg-muted border-b border-border">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Name</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Phone</th>
+                            <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Email</th>
+                            <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Transactions</th>
+                            <th className="px-6 py-3 text-right text-sm font-semibold text-foreground">Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedContacts.map((contact) => {
+                            const balance = getContactBalance(contact.id)
+                            const txCount = getContactTransactionCount(contact.id)
+                            return (
+                              <tr
+                                key={contact.id}
+                                onClick={() => setSelectedContactId(contact.id)}
+                                className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer"
+                              >
+                                <td className="px-6 py-4">
+                                  <div className="flex items-center gap-3">
+                                    <Avatar className="size-8">
+                                      {contact.profile_pic && (
+                                        <AvatarImage src={contact.profile_pic} alt={contact.name} />
+                                      )}
+                                      <AvatarFallback className="text-xs">{getInitials(contact.name)}</AvatarFallback>
+                                    </Avatar>
+                                    <p className="text-sm font-medium text-foreground">
+                                      {searchQuery ? highlightText(contact.name, searchQuery) : contact.name}
+                                    </p>
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-sm text-muted-foreground">{contact.phone || "-"}</td>
+                                <td className="px-6 py-4 text-sm text-muted-foreground">{contact.email || "-"}</td>
+                                <td className="px-6 py-4 text-sm text-right text-muted-foreground">{txCount}</td>
+                                <td className={`px-6 py-4 text-sm font-semibold text-right ${balance >= 0 ? "text-secondary" : "text-destructive"}`}>
+                                  {formatCurrency(balance, settings.currency)}
+                                </td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  {sortedContacts.length === 0 && (
+                    <Card className="p-12 bg-card border border-border text-center">
+                      <p className="text-muted-foreground text-lg">
+                        {searchQuery ? "No contacts match your search." : "No contacts available. Add contacts to get started!"}
+                      </p>
+                    </Card>
+                  )}
+                </>
+              )}
+            </>
           )}
 
           {/* Selected Contact Details and Actions */}

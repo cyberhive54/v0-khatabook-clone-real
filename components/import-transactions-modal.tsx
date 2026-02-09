@@ -200,7 +200,7 @@ export function ImportTransactionsModal({ isOpen, onClose }: ImportTransactionsM
 
   const downloadTemplate = () => {
     if (format === 'csv') {
-      const template = 'contact_name,you_give,you_got,date,description,notes\n"John Doe",100,0,2026-02-09,"Coffee meeting","Personal"'
+      const template = 'contact_name,you_give,you_got,date,description,notes\n"John Doe",100,0,"2026-02-09","Coffee meeting","Personal"'
       const blob = new Blob([template], { type: 'text/csv' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')

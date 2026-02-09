@@ -199,7 +199,7 @@ export function EditTransactionModal({
             <button
               type="button"
               onClick={() => setTransactionType("you_give")}
-              disabled={disableTypeChange || isLoading}
+              disabled={isLoading}
               className={`px-6 py-2 rounded-md font-semibold transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                 transactionType === "you_give"
                   ? "bg-primary text-primary-foreground shadow-sm"
@@ -211,7 +211,7 @@ export function EditTransactionModal({
             <button
               type="button"
               onClick={() => setTransactionType("you_got")}
-              disabled={disableTypeChange || isLoading}
+              disabled={isLoading}
               className={`px-6 py-2 rounded-md font-semibold transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                 transactionType === "you_got"
                   ? "bg-primary text-primary-foreground shadow-sm"
@@ -238,10 +238,10 @@ export function EditTransactionModal({
                 }}
                 onFocus={() => setShowContactDropdown(true)}
                 className="w-full px-4 py-2.5 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all disabled:opacity-50"
-                disabled={isLoading || disableContactChange}
+                disabled={isLoading}
               />
 
-              {showContactDropdown && (
+              {showContactDropdown && !isLoading && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-input rounded-lg shadow-xl z-20 max-h-56 overflow-y-auto">
                   {filteredContacts.length > 0 ? (
                     filteredContacts.map((contact) => (
