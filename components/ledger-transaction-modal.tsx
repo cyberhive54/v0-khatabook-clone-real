@@ -59,7 +59,6 @@ export function LedgerTransactionModal({
         notes,
         you_give: transactionType === "give" ? Number.parseFloat(amount) : 0,
         you_got: transactionType === "got" ? Number.parseFloat(amount) : 0,
-        status: "unsettled" as const,
       }
 
 

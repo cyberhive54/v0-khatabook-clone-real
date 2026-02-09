@@ -22,7 +22,6 @@ export interface Transaction {
   date: string
   description: string
   notes: string
-  status: "settled" | "unsettled"
   bills?: Bill[]
   user_id?: string
 }
@@ -58,43 +57,43 @@ export function useTransactions() {
   }
 
   const updateTransaction = async (
-  id: string,
-  updates: Partial<Transaction>,
-  bills?: Omit<Bill, "id" | "transaction_id">[]
+    id: string,
+    updates: Partial<Transaction>,
+    bills: Omit<Bill, "id" | "transaction_id">[] = []
   ) => {
-  setOperationLoading(true)
-  setOperationError(null)
-  try {
-    const { error } = await supabase
-      .from("transactions")
-      .update(updates)
-      .eq("id", id)
+    setOperationLoading(true)
+    setOperationError(null)
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update(updates)
+        .eq("id", id)
 
-    if (error) throw new Error(error.message)
+      if (error) throw new Error(error.message)
 
-    if (bills && bills.length > 0) {
-      await supabase.from("bills").delete().eq("transaction_id", id)
+      if (bills && bills.length > 0) {
+        await supabase.from("bills").delete().eq("transaction_id", id)
 
-      const billsWithTransactionId = bills.map((bill) => ({
-        ...bill,
-        transaction_id: id,
-      }))
+        const billsWithTransactionId = bills.map((bill) => ({
+          ...bill,
+          transaction_id: id,
+        }))
 
-      const { error: billsError } = await supabase
-        .from("bills")
-        .insert(billsWithTransactionId)
+        const { error: billsError } = await supabase
+          .from("bills")
+          .insert(billsWithTransactionId)
 
-      if (billsError) throw new Error(billsError.message)
+        if (billsError) throw new Error(billsError.message)
+      }
+
+      mutate()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to update transaction"
+      setOperationError(message)
+      throw err
+    } finally {
+      setOperationLoading(false)
     }
-
-    mutate()
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Failed to update transaction"
-    setOperationError(message)
-    throw err
-  } finally {
-    setOperationLoading(false)
-  }
   }
 
   const addBillToTransaction = async (transactionId: string, bill: Omit<Bill, "id" | "transaction_id">) => {
