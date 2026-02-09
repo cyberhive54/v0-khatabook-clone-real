@@ -227,15 +227,19 @@ export default function LedgerPage() {
                               <td className="py-3 px-2 text-foreground max-w-xs">
                                 <div className="flex items-center gap-2">
                                   <span className="truncate">{t.description || "-"}</span>
-                                  {t.bills && t.bills.length > 0 && (
+                                  {t.bills && t.bills.length > 0 ? (
                                     <button
-                                      onClick={() => handleBillClick(t.bills[0])}
+                                      onClick={() => {
+                                        if (t.bills && t.bills.length > 0) {
+                                          handleBillClick(t.bills[0])
+                                        }
+                                      }}
                                       className="p-1 hover:bg-muted rounded transition-colors"
                                       title={`${t.bills.length} bill(s) attached`}
                                     >
                                       <ImageIcon size={16} className="text-primary hover:text-primary/80 flex-shrink-0" />
                                     </button>
-                                  )}
+                                  ) : null}
                                 </div>
                               </td>
                               <td
