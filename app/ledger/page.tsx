@@ -2,14 +2,15 @@
 
 import { useState, useEffect } from "react"
 import { useContacts } from "@/hooks/use-contacts"
-import { useTransactions } from "@/hooks/use-transactions"
+import { useTransactions, type Transaction, type Bill } from "@/hooks/use-transactions"
 import { useSearchParams } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Navigation } from "@/components/navigation"
 import { AppHeader } from "@/components/app-header"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { LedgerTransactionModal } from "@/components/ledger-transaction-modal"
+import { AddTransactionModal } from "@/components/add-transaction-modal"
+import { EditTransactionModal } from "@/components/edit-transaction-modal"
 import { format } from "date-fns"
 import { Edit2, Trash2, ImageIcon } from "lucide-react"
 import { useSettings } from "@/hooks/use-settings"
@@ -18,7 +19,7 @@ import { formatCurrency } from "@/lib/currency-utils"
 export default function LedgerPage() {
   const searchParams = useSearchParams()
   const { contacts } = useContacts()
-  const { transactions, deleteTransaction } = useTransactions()
+  const { transactions, deleteTransaction, addTransaction, updateTransaction, operationLoading } = useTransactions()
   const { settings } = useSettings()
   const [selectedContactId, setSelectedContactId] = useState<string | null>(null)
   const [transactionModalOpen, setTransactionModalOpen] = useState(false)
@@ -67,7 +68,7 @@ export default function LedgerPage() {
 
   const handleEditTransaction = (transaction: any) => {
     setEditingTransaction(transaction)
-    setModalType(transaction.you_give ? "give" : "got")
+    setModalType(null)
     setTransactionModalOpen(true)
   }
 
@@ -75,6 +76,16 @@ export default function LedgerPage() {
     if (confirm("Are you sure you want to delete this transaction?")) {
       await deleteTransaction(transactionId)
     }
+  }
+
+  const handleAddTransactionSubmit = async (transaction: Omit<Transaction, "id" | "bills">, bills: Omit<Bill, "id" | "transaction_id">[]) => {
+    await addTransaction(transaction, bills)
+    setTransactionModalOpen(false)
+  }
+
+  const handleEditTransactionSubmit = async (id: string, transaction: Partial<Transaction>, bills: Omit<Bill, "id" | "transaction_id">[]) => {
+    await updateTransaction(id, transaction, bills)
+    setTransactionModalOpen(false)
   }
 
   const contactTransactions = selectedContact ? getContactTransactions(selectedContact.id) : []
@@ -252,13 +263,28 @@ export default function LedgerPage() {
           )}
 
           {/* Transaction Modal */}
-          <LedgerTransactionModal
-            open={transactionModalOpen}
-            onOpenChange={setTransactionModalOpen}
-            contact={selectedContact}
-            transactionType={modalType}
-            editingTransaction={editingTransaction}
-          />
+          {modalType && !editingTransaction && selectedContact && (
+            <AddTransactionModal
+              isOpen={transactionModalOpen}
+              onClose={() => setTransactionModalOpen(false)}
+              onSubmit={handleAddTransactionSubmit}
+              isLoading={operationLoading}
+              contactId={selectedContact.id}
+              disableContactChange={true}
+            />
+          )}
+          
+          {editingTransaction && (
+            <EditTransactionModal
+              isOpen={transactionModalOpen}
+              onClose={() => setTransactionModalOpen(false)}
+              transaction={editingTransaction}
+              onSubmit={handleEditTransactionSubmit}
+              isLoading={operationLoading}
+              disableContactChange={true}
+              disableTypeChange={true}
+            />
+          )}
         </main>
       </div>
     </div>

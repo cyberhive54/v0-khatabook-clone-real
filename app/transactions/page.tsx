@@ -21,7 +21,7 @@ type FilterType = "all" | "you_got" | "you_give" | "settled_up"
 type SortType = "most_recent" | "highest_amount" | "oldest" | "least_amount"
 
 export default function TransactionsPage() {
-  const { transactions, addTransaction, deleteTransaction, updateTransaction } = useTransactions()
+  const { transactions, addTransaction, deleteTransaction, updateTransaction, operationLoading } = useTransactions()
   const { contacts } = useContacts()
   const { settings } = useSettings()
   const [showAddModal, setShowAddModal] = useState(false)
@@ -273,22 +273,22 @@ export default function TransactionsPage() {
         </main>
       </div>
 
-        <AddTransactionModal
-        isOpen={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onSubmit={addTransaction}
-        isLoading={false}
+          <AddTransactionModal
+            isOpen={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onSubmit={addTransaction}
+            isLoading={operationLoading}
       />
 
-      <EditTransactionModal
-        isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false)
-          setSelectedTransaction(null)
-        }}
-        transaction={selectedTransaction}
-        onSubmit={updateTransaction}
-        isLoading={false}
+          <EditTransactionModal
+            isOpen={showEditModal}
+            onClose={() => {
+              setShowEditModal(false)
+              setSelectedTransaction(null)
+            }}
+            transaction={selectedTransaction}
+            onSubmit={updateTransaction}
+            isLoading={operationLoading}
       />
 
       <DeleteTransactionModal

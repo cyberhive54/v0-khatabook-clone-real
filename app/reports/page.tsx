@@ -22,6 +22,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { CalendarIcon } from "lucide-react"
+import { CalendarPicker } from "@/components/calendar-picker"
 
 type TimePeriod = "today" | "week" | "2weeks" | "month" | "3months" | "6months" | "yearly" | "all" | "custom"
 
@@ -193,33 +194,29 @@ export default function ReportsPage() {
             </div>
 
             {showCustom && timePeriod === "custom" && (
-              <div className="mt-4 pt-4 border-t border-border flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-foreground mb-2">Start Date</label>
-                  <input
-                    type="date"
+              <div className="mt-4 pt-4 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-3">Start Date</label>
+                  <CalendarPicker
                     value={customDateRange.start.toISOString().split("T")[0]}
-                    onChange={(e) =>
+                    onChange={(date) =>
                       setCustomDateRange({
                         ...customDateRange,
-                        start: new Date(e.target.value),
+                        start: new Date(date),
                       })
                     }
-                    className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm"
                   />
                 </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-medium text-foreground mb-2">End Date</label>
-                  <input
-                    type="date"
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-3">End Date</label>
+                  <CalendarPicker
                     value={customDateRange.end.toISOString().split("T")[0]}
-                    onChange={(e) =>
+                    onChange={(date) =>
                       setCustomDateRange({
                         ...customDateRange,
-                        end: new Date(e.target.value),
+                        end: new Date(date),
                       })
                     }
-                    className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground text-sm"
                   />
                 </div>
               </div>
