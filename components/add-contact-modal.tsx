@@ -29,11 +29,39 @@ export function AddContactModal({
   profile_pic: "",
   balance: 0,
 })
+  const [phoneError, setPhoneError] = useState("")
+  const [profilePicError, setProfilePicError] = useState("")
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, "").slice(0, 10)
+    setFormData((prev) => ({ ...prev, phone: value }))
+    setPhoneError(value.length > 10 ? "Phone number must be maximum 10 digits" : "")
+  }
+
+  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    if (file.size > 2 * 1024 * 1024) {
+      setProfilePicError("Profile photo must be maximum 2 MB")
+      setFormData((prev) => ({ ...prev, profile_pic: "" }))
+      return
+    }
+    
+    setProfilePicError("")
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string
+      setFormData((prev) => ({ ...prev, profile_pic: base64 }))
+    }
+    reader.readAsDataURL(file)
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    if (name !== "phone") {
+      setFormData((prev) => ({ ...prev, [name]: value }))
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +69,16 @@ export function AddContactModal({
 
     if (!formData.name.trim()) {
       addToast("Please enter a contact name", "error")
+      return
+    }
+
+    if (phoneError) {
+      addToast("Please fix phone number errors", "error")
+      return
+    }
+
+    if (profilePicError) {
+      addToast("Please fix profile photo errors", "error")
       return
     }
 
@@ -56,6 +94,8 @@ export function AddContactModal({
 
   const handleClose = () => {
     setFormData({ name: "", phone: "", email: "", address: "", notes: "", profile_pic: "", balance: 0, })
+    setPhoneError("")
+    setProfilePicError("")
     onClose()
   }
 
@@ -91,10 +131,12 @@ export function AddContactModal({
             type="tel"
             name="phone"
             value={formData.phone}
-            onChange={handleChange}
-            placeholder="Phone number"
+            onChange={handlePhoneChange}
+            placeholder="Phone number (max 10 digits)"
             disabled={isLoading}
+            maxLength={10}
           />
+          {phoneError && <p className="text-xs text-destructive mt-1">{phoneError}</p>}
         </div>
 
         <div>
@@ -123,6 +165,25 @@ export function AddContactModal({
             placeholder="Address"
             disabled={isLoading}
           />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Profile Photo
+          </label>
+          <Input
+            type="file"
+            name="profile_pic"
+            onChange={handleProfilePicChange}
+            accept="image/*"
+            disabled={isLoading}
+          />
+          {profilePicError && <p className="text-xs text-destructive mt-1">{profilePicError}</p>}
+          {formData.profile_pic && (
+            <div className="mt-2">
+              <img src={formData.profile_pic} alt="Preview" className="h-20 w-20 object-cover rounded-md" />
+            </div>
+          )}
         </div>
 
         <div>
