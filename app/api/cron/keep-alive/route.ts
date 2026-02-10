@@ -8,7 +8,7 @@ export const runtime = 'nodejs'
  * Runs every 5 days via Vercel Cron
  * 
  * Endpoint: POST /api/cron/keep-alive
- * Cron Schedule: 0 0 */5 * * (every 5 days at 00:00 UTC)
+ * Cron Schedule: 0 0 (asterisk)5 (asterisk) (asterisk) - every 5 days at 00:00 UTC
  */
 export async function POST(request: Request) {
   // Verify the request is from Vercel Cron
