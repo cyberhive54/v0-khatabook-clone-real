@@ -28,7 +28,9 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
     setIsOpen(false)
   }
 
-  const handlePrevMonth = () => {
+  const handlePrevMonth = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (month === 0) {
       setMonth(11)
       setYear(year - 1)
@@ -37,7 +39,9 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
     }
   }
 
-  const handleNextMonth = () => {
+  const handleNextMonth = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
     if (month === 11) {
       setMonth(0)
       setYear(year + 1)
@@ -57,7 +61,12 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
   return (
     <div className="relative">
       <button
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        type="button"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          !disabled && setIsOpen(!isOpen)
+        }}
         disabled={disabled}
         className="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
       >
@@ -65,9 +74,14 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
       </button>
 
       {isOpen && !disabled && (
-        <div className="absolute top-full left-0 mt-2 bg-background border border-border rounded-lg p-4 shadow-lg z-10 w-72">
+        <div className="absolute top-full left-0 mt-2 bg-background border border-border rounded-lg p-4 shadow-lg z-50 w-72" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center justify-between mb-4">
-            <button onClick={handlePrevMonth} className="p-1 hover:bg-muted rounded">
+            <button 
+              type="button"
+              onClick={handlePrevMonth}
+              onMouseDown={(e) => e.preventDefault()}
+              className="p-1 hover:bg-muted rounded"
+            >
               <ChevronLeft size={20} />
             </button>
 
@@ -75,9 +89,11 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
               <select
                 value={monthNames[month]}
                 onChange={(e) => {
+                  e.stopPropagation()
                   const newMonth = monthNames.indexOf(e.target.value)
                   setMonth(newMonth)
                 }}
+                onClick={(e) => e.stopPropagation()}
                 className="px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
               >
                 {monthNames.map((m) => (
@@ -89,7 +105,11 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
 
               <select
                 value={year}
-                onChange={(e) => setYear(parseInt(e.target.value))}
+                onChange={(e) => {
+                  e.stopPropagation()
+                  setYear(parseInt(e.target.value))
+                }}
+                onClick={(e) => e.stopPropagation()}
                 className="px-2 py-1 border border-input rounded bg-background text-foreground text-sm"
               >
                 {Array.from({ length: 20 }, (_, i) => year - 10 + i).map((y) => (
@@ -100,7 +120,12 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
               </select>
             </div>
 
-            <button onClick={handleNextMonth} className="p-1 hover:bg-muted rounded">
+            <button 
+              type="button"
+              onClick={handleNextMonth}
+              onMouseDown={(e) => e.preventDefault()}
+              className="p-1 hover:bg-muted rounded"
+            >
               <ChevronRight size={20} />
             </button>
           </div>
@@ -128,7 +153,13 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
               return (
                 <button
                   key={day}
-                  onClick={() => handleDateClick(day)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    handleDateClick(day)
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
                   className={`p-2 text-sm rounded hover:bg-muted transition-colors ${
                     isSelected ? "bg-primary text-primary-foreground" : ""
                   }`}
