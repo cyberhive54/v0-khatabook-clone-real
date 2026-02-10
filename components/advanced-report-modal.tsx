@@ -22,7 +22,7 @@ export function AdvancedReportModal({ isOpen, onClose }: AdvancedReportModalProp
   const { contacts } = useContacts()
   const { settings } = useSettings()
   const [isExporting, setIsExporting] = useState(false)
-  const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv')
+  const [exportFormat, setExportFormat] = useState<'csv' | 'json' | 'pdf'>('csv')
   const [selectedContacts, setSelectedContacts] = useState<string[]>([])
   const [selectAllContacts, setSelectAllContacts] = useState(false)
   const [dateRange, setDateRange] = useState<'all' | 'custom'>('all')
@@ -134,6 +134,215 @@ export function AdvancedReportModal({ isOpen, onClose }: AdvancedReportModalProp
     document.body.removeChild(a)
   }
 
+  const exportToPDF = () => {
+    // Create HTML content for PDF
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Transaction Report</title>
+        <style>
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            color: #1f2937;
+            line-height: 1.6;
+            padding: 40px;
+            background: #fff;
+          }
+          .header {
+            margin-bottom: 40px;
+            border-bottom: 3px solid #0f172a;
+            padding-bottom: 20px;
+          }
+          .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 8px;
+          }
+          .header p {
+            font-size: 13px;
+            color: #6b7280;
+            margin: 4px 0;
+          }
+          .summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #0f172a;
+          }
+          .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          }
+          .summary-label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0f172a;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+          }
+          thead {
+            background: #0f172a;
+            color: white;
+          }
+          th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 12px;
+          }
+          tbody tr:hover {
+            background: #f9fafb;
+          }
+          .contact-cell {
+            font-weight: 600;
+            color: #0f172a;
+          }
+          .type-give {
+            color: #059669;
+            font-weight: 600;
+          }
+          .type-got {
+            color: #dc2626;
+            font-weight: 600;
+          }
+          .amount-cell {
+            text-align: right;
+            font-weight: 600;
+            color: #1f2937;
+          }
+          .date-cell {
+            color: #6b7280;
+          }
+          .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+            text-align: right;
+            font-size: 11px;
+            color: #9ca3af;
+          }
+          .page-break {
+            page-break-after: always;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Transaction Report</h1>
+          <p>Generated on ${format(new Date(), 'MMMM dd, yyyy HH:mm')}</p>
+          <p>Business: ${settings.businessName || settings.appName}</p>
+        </div>
+
+        <div class="summary">
+          <div class="summary-item">
+            <span class="summary-label">Total Transactions</span>
+            <span class="summary-value">${filteredTransactions.length}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Total Amount</span>
+            <span class="summary-value">${formatCurrency(
+              filteredTransactions.reduce((sum, t) => sum + (t.you_give || t.you_got || 0), 0),
+              settings.currency,
+            )}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Date Range</span>
+            <span class="summary-value">${
+              dateRange === 'custom'
+                ? `${startDate ? format(new Date(startDate), 'MMM dd') : 'Start'} - ${endDate ? format(new Date(endDate), 'MMM dd') : 'End'}`
+                : 'All Dates'
+            }</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Contacts Included</span>
+            <span class="summary-value">${contactIds.length > 0 ? contactIds.length : 'All'}</span>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Contact Name</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredTransactions
+              .map(
+                (t) => `
+              <tr>
+                <td class="contact-cell">${getContactName(t.contact_id)}</td>
+                <td class="${t.you_give ? 'type-give' : 'type-got'}">${t.you_give ? 'You Give' : 'You Got'}</td>
+                <td class="amount-cell">${formatCurrency(t.you_give || t.you_got || 0, settings.currency)}</td>
+                <td class="date-cell">${format(new Date(t.date), 'MMM dd, yyyy')}</td>
+                <td>${t.description || '-'}</td>
+              </tr>
+            `,
+              )
+              .join('')}
+          </tbody>
+        </table>
+
+        <div class="footer">
+          <p>This report was automatically generated by Khatabook</p>
+        </div>
+      </body>
+      </html>
+    `
+
+    // Use html2pdf library approach
+    const iframe = document.createElement('iframe')
+    iframe.style.display = 'none'
+    document.body.appendChild(iframe)
+    
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+    if (iframeDoc) {
+      iframeDoc.open()
+      iframeDoc.write(html)
+      iframeDoc.close()
+
+      iframe.contentWindow?.print()
+      
+      // Trigger print-to-PDF
+      setTimeout(() => {
+        document.body.removeChild(iframe)
+      }, 1000)
+    }
+  }
+
   const handleExport = async () => {
     if (filteredTransactions.length === 0) {
       addToast('No transactions match your filter criteria', 'error')
@@ -144,11 +353,18 @@ export function AdvancedReportModal({ isOpen, onClose }: AdvancedReportModalProp
     try {
       if (exportFormat === 'csv') {
         exportToCSV()
-      } else {
+      } else if (exportFormat === 'json') {
         exportToJSON()
+      } else if (exportFormat === 'pdf') {
+        exportToPDF()
       }
       addToast(`Exported ${filteredTransactions.length} transactions successfully`, 'success')
-      onClose()
+      // Don't close immediately for PDF as print dialog takes time
+      if (exportFormat !== 'pdf') {
+        onClose()
+      } else {
+        setTimeout(() => onClose(), 2000)
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to export transactions'
       addToast(errorMessage, 'error')
@@ -364,20 +580,20 @@ export function AdvancedReportModal({ isOpen, onClose }: AdvancedReportModalProp
           {filteredTransactions.length > 0 && (
             <div>
               <label className="block text-sm font-semibold text-foreground mb-3">Export Format</label>
-              <div className="grid grid-cols-2 gap-2">
-                {(['csv', 'json'] as const).map((format) => (
+              <div className="grid grid-cols-3 gap-2">
+                {(['csv', 'json', 'pdf'] as const).map((fmt) => (
                   <button
-                    key={format}
-                    onClick={() => setExportFormat(format)}
+                    key={fmt}
+                    onClick={() => setExportFormat(fmt)}
                     className={`p-3 rounded-lg border-2 transition-all ${
-                      exportFormat === format
+                      exportFormat === fmt
                         ? 'border-primary bg-primary/10'
                         : 'border-border hover:border-primary/50'
                     }`}
                   >
-                    <div className="font-semibold text-foreground uppercase text-sm">{format}</div>
+                    <div className="font-semibold text-foreground uppercase text-sm">{fmt}</div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {format === 'csv' ? 'Spreadsheet' : 'Data file'}
+                      {fmt === 'csv' ? 'Spreadsheet' : fmt === 'json' ? 'Data file' : 'Document'}
                     </div>
                   </button>
                 ))}
