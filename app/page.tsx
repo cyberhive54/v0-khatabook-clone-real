@@ -98,10 +98,24 @@ export default function Dashboard() {
     setTransactionModalOpen(true)
   }
 
-  // Swapped logic: "you will get" = you_give amounts (will get back), "you will give" = you_got amounts (must return)
-  const totalYouWillGet = transactions.reduce((sum, t) => sum + (t.you_give || 0), 0)
-  const totalYouWillGive = transactions.reduce((sum, t) => sum + (t.you_got || 0), 0)
-  const netBalance = totalYouWillGet - totalYouWillGive
+  // Calculate final balance for each contact, then sum positive (you will give) and negative (you will get)
+  const contactBalances: { [key: string]: number } = {}
+  
+  contacts.forEach((contact) => {
+    const balance = getBalance(contact.id)
+    contactBalances[contact.id] = balance
+  })
+
+  // Sum positive balances (they owe us - green) and negative balances (we owe them - red)
+  const totalYouWillGive = Object.values(contactBalances).reduce((sum, balance) => {
+    return sum + (balance > 0 ? balance : 0)
+  }, 0)
+  
+  const totalYouWillGet = Object.values(contactBalances).reduce((sum, balance) => {
+    return sum + (balance < 0 ? Math.abs(balance) : 0)
+  }, 0)
+  
+  const netBalance = totalYouWillGive - totalYouWillGet
 
   const isLoading = contactsLoading || transactionsLoading
 
