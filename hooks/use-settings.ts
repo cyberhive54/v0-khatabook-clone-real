@@ -55,11 +55,9 @@ export function useSettings() {
           if (stored) {
             const parsedSettings = JSON.parse(stored)
             setSettings(parsedSettings)
-            if (setTheme) setTheme(parsedSettings.theme)
           } else {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SETTINGS))
             setSettings(DEFAULT_SETTINGS)
-            if (setTheme) setTheme(DEFAULT_SETTINGS.theme)
           }
         } else if (data && data.length > 0) {
           const dbSettings = data[0]
@@ -76,7 +74,10 @@ export function useSettings() {
           }
           setSettings(mappedSettings)
           localStorage.setItem(STORAGE_KEY, JSON.stringify(mappedSettings))
-          if (setTheme) setTheme(mappedSettings.theme)
+          // Apply theme from DB
+          if (setTheme) {
+            setTheme(mappedSettings.theme)
+          }
         } else {
           const { data: insertData, error: insertError } = await supabaseRef.current
             .from("settings")
@@ -97,6 +98,7 @@ export function useSettings() {
           if (insertError) {
             console.warn("[v0] Failed to create default settings:", insertError.message)
             localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SETTINGS))
+            setSettings(DEFAULT_SETTINGS)
           } else if (insertData && insertData.length > 0) {
             const newSettings: Settings = {
               id: insertData[0].id,
@@ -111,7 +113,9 @@ export function useSettings() {
             }
             setSettings(newSettings)
             localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings))
-            if (setTheme) setTheme(newSettings.theme)
+            if (setTheme) {
+              setTheme(newSettings.theme)
+            }
           }
         }
       } catch (err) {
@@ -120,11 +124,9 @@ export function useSettings() {
         if (stored) {
           const parsedSettings = JSON.parse(stored)
           setSettings(parsedSettings)
-          if (setTheme) setTheme(parsedSettings.theme)
         } else {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SETTINGS))
           setSettings(DEFAULT_SETTINGS)
-          if (setTheme) setTheme(DEFAULT_SETTINGS.theme)
         }
       } finally {
         setIsLoading(false)
@@ -132,7 +134,7 @@ export function useSettings() {
     }
 
     initializeSettings()
-  }, [setTheme])
+  }, [])
 
   const autoSave = useCallback(
     async (settingsToSave: Omit<Settings, "id">) => {
@@ -143,10 +145,16 @@ export function useSettings() {
           ...settingsToSave,
         }
 
+        // Always update local state first
+        setSettings(updatedSettings)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings))
+
+        // Apply theme immediately to avoid visual lag
         if (settingsToSave.theme && setTheme) {
           setTheme(settingsToSave.theme)
         }
 
+        // Then sync to database
         if (supabaseRef.current && settings.id !== "default") {
           const dbUpdate = {
             app_name: settingsToSave.appName,
@@ -165,14 +173,11 @@ export function useSettings() {
             .eq("id", settings.id)
 
           if (updateError) {
-            console.error("[v0] Failed to update Supabase:", updateError.message)
+            console.error("[v0] Failed to sync settings to Supabase:", updateError.message)
           } else {
-            console.log("[v0] Settings saved to Supabase")
+            console.log("[v0] Settings synced to Supabase")
           }
         }
-
-        setSettings(updatedSettings)
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSettings))
       } catch (err) {
         console.error("[v0] Error saving settings:", err instanceof Error ? err.message : String(err))
         setError(err instanceof Error ? err : new Error("Failed to save settings"))
