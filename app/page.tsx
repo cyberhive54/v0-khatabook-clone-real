@@ -132,18 +132,18 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground text-sm">Net Balance</p>
-                  <p className={`text-2xl font-bold flex items-baseline gap-1 ${netBalance > 0 ? "text-destructive" : netBalance < 0 ? "text-secondary" : "text-foreground"}`}>
-                    {isLoading ? "..." : netBalance > 0 ? (
+                  <p className={`text-2xl font-bold flex items-baseline gap-1 ${netBalance < 0 ? "text-destructive" : netBalance > 0 ? "text-secondary" : "text-foreground"}`}>
+                    {isLoading ? "..." : netBalance < 0 ? (
                       <>
                         <span className="text-lg">-</span>
-                        {formatCurrency(netBalance, settings.currency)}
+                        {formatCurrency(Math.abs(netBalance), settings.currency)}
                       </>
                     ) : (
-                      formatCurrency(Math.abs(netBalance), settings.currency)
+                      formatCurrency(netBalance, settings.currency)
                     )}
                   </p>
                 </div>
-                <Wallet className={netBalance > 0 ? "text-destructive" : netBalance < 0 ? "text-secondary" : "text-muted-foreground"} size={32} />
+                <Wallet className={netBalance < 0 ? "text-destructive" : netBalance > 0 ? "text-secondary" : "text-muted-foreground"} size={32} />
               </div>
             </Card>
 

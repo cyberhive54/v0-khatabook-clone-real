@@ -261,6 +261,11 @@ export function AdvancedReportModal({ isOpen, onClose }: AdvancedReportModalProp
           <h1>Transaction Report</h1>
           <p>Generated on ${format(new Date(), 'MMMM dd, yyyy HH:mm')}</p>
           <p>Business: ${settings.businessName || settings.appName}</p>
+          ${
+            selectAllContacts === false && selectedContacts.length === 1
+              ? `<p><strong>Contact:</strong> ${getContactName(selectedContacts[0])}</p>`
+              : ''
+          }
         </div>
 
         <div class="summary">
@@ -275,18 +280,36 @@ export function AdvancedReportModal({ isOpen, onClose }: AdvancedReportModalProp
               settings.currency,
             )}</span>
           </div>
+          ${
+            dateRange === 'custom'
+              ? `
           <div class="summary-item">
             <span class="summary-label">Date Range</span>
-            <span class="summary-value">${
-              dateRange === 'custom'
-                ? `${startDate ? format(new Date(startDate), 'MMM dd') : 'Start'} - ${endDate ? format(new Date(endDate), 'MMM dd') : 'End'}`
-                : 'All Dates'
-            }</span>
+            <span class="summary-value">${startDate ? format(new Date(startDate), 'MMM dd, yyyy') : 'Start'} - ${endDate ? format(new Date(endDate), 'MMM dd, yyyy') : 'End'}</span>
           </div>
+          `
+              : ''
+          }
+          ${
+            amountRange === 'custom'
+              ? `
+          <div class="summary-item">
+            <span class="summary-label">Amount Range</span>
+            <span class="summary-value">${minAmount ? formatCurrency(parsedMinAmount, settings.currency) : '₹0'} - ${maxAmount ? formatCurrency(parsedMaxAmount, settings.currency) : 'Unlimited'}</span>
+          </div>
+          `
+              : ''
+          }
+          ${
+            selectAllContacts === false && selectedContacts.length > 0
+              ? `
           <div class="summary-item">
             <span class="summary-label">Contacts Included</span>
-            <span class="summary-value">${contactIds.length > 0 ? contactIds.length : 'All'}</span>
+            <span class="summary-value">${selectedContacts.length}</span>
           </div>
+          `
+              : ''
+          }
         </div>
 
         <table>
