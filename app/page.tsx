@@ -115,7 +115,8 @@ export default function Dashboard() {
     return sum + (balance < 0 ? Math.abs(balance) : 0)
   }, 0)
   
-  const netBalance = totalYouWillGive - totalYouWillGet
+  // Net balance: positive = you will get more, negative = you will give more
+  const netBalance = totalYouWillGet - totalYouWillGive
 
   const isLoading = contactsLoading || transactionsLoading
 
@@ -131,11 +132,11 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-muted-foreground text-sm">Net Balance</p>
-                  <p className={`text-2xl font-bold ${netBalance >= 0 ? "text-secondary" : "text-destructive"}`}>
-                    {isLoading ? "..." : formatCurrency(netBalance || 0, settings.currency)}
+                  <p className={`text-2xl font-bold ${netBalance > 0 ? "text-destructive" : netBalance < 0 ? "text-secondary" : "text-foreground"}`}>
+                    {isLoading ? "..." : netBalance > 0 ? "-" + formatCurrency(netBalance, settings.currency) : formatCurrency(Math.abs(netBalance), settings.currency)}
                   </p>
                 </div>
-                <Wallet className={netBalance >= 0 ? "text-secondary" : "text-destructive"} size={32} />
+                <Wallet className={netBalance > 0 ? "text-destructive" : netBalance < 0 ? "text-secondary" : "text-muted-foreground"} size={32} />
               </div>
             </Card>
 

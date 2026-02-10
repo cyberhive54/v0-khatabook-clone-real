@@ -9,6 +9,8 @@ import { Card } from "@/components/ui/card"
 import { Navigation } from "@/components/navigation"
 import { AppHeader } from "@/components/app-header"
 import { Button } from "@/components/ui/button"
+import { AdvancedReportModal } from "@/components/advanced-report-modal"
+import { ExportTransactionsModal } from "@/components/export-transactions-modal"
 import {
   LineChart,
   Line,
@@ -21,7 +23,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, Download, FileText } from "lucide-react"
 import { CalendarPicker } from "@/components/calendar-picker"
 
 type TimePeriod = "today" | "week" | "2weeks" | "month" | "3months" | "6months" | "yearly" | "all" | "custom"
@@ -41,6 +43,8 @@ export default function ReportsPage() {
     end: new Date(),
   })
   const [showCustom, setShowCustom] = useState(false)
+  const [advancedModalOpen, setAdvancedModalOpen] = useState(false)
+  const [basicExportModalOpen, setBasicExportModalOpen] = useState(false)
 
   const getDateRange = (period: TimePeriod): DateRange => {
     const end = new Date()
@@ -158,7 +162,31 @@ export default function ReportsPage() {
       <div className="flex-1">
         <AppHeader />
         <main className="p-4 md:p-8 max-w-7xl mx-auto w-full">
-          <h1 className="text-3xl font-bold text-foreground mb-8">Reports & Analytics</h1>
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">Reports & Analytics</h1>
+              <p className="text-muted-foreground text-sm">View analytics and export your transaction data</p>
+            </div>
+            <div className="flex gap-2 w-full md:w-auto">
+              <Button
+                onClick={() => setAdvancedModalOpen(true)}
+                disabled={transactions.length === 0}
+                className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-2"
+              >
+                <Download size={16} />
+                Advanced Report
+              </Button>
+              <Button
+                onClick={() => setBasicExportModalOpen(true)}
+                disabled={transactions.length === 0}
+                variant="outline"
+                className="flex-1 md:flex-none border-border flex items-center gap-2"
+              >
+                <FileText size={16} />
+                Quick Export
+              </Button>
+            </div>
+          </div>
 
           <Card className="p-6 bg-card border border-border mb-8">
             <div className="flex items-center gap-2 mb-4">
@@ -328,6 +356,10 @@ export default function ReportsPage() {
               <p className="text-muted-foreground">No transactions found for the selected period.</p>
             </Card>
           )}
+
+          {/* Modals */}
+          <AdvancedReportModal isOpen={advancedModalOpen} onClose={() => setAdvancedModalOpen(false)} />
+          <ExportTransactionsModal isOpen={basicExportModalOpen} onClose={() => setBasicExportModalOpen(false)} />
         </main>
       </div>
     </div>

@@ -143,10 +143,6 @@ export function useSettings() {
           ...settingsToSave,
         }
 
-        if (settingsToSave.theme && setTheme) {
-          setTheme(settingsToSave.theme)
-        }
-
         if (supabaseRef.current && settings.id !== "default") {
           const dbUpdate = {
             app_name: settingsToSave.appName,
@@ -168,7 +164,13 @@ export function useSettings() {
             console.error("[v0] Failed to update Supabase:", updateError.message)
           } else {
             console.log("[v0] Settings saved to Supabase")
+            // Only set theme AFTER successful DB save
+            if (settingsToSave.theme && setTheme) {
+              setTheme(settingsToSave.theme)
+            }
           }
+        } else if (settingsToSave.theme && setTheme) {
+          setTheme(settingsToSave.theme)
         }
 
         setSettings(updatedSettings)

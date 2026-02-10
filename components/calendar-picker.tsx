@@ -23,7 +23,10 @@ export function CalendarPicker({ value, onChange, disabled = false }: CalendarPi
 
   const handleDateClick = (day: number) => {
     const newDate = new Date(year, month, day)
-    const dateString = newDate.toISOString().split("T")[0]
+    // Format as YYYY-MM-DD without timezone conversion
+    const dateString = newDate.getFullYear() + '-' + 
+      String(newDate.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(newDate.getDate()).padStart(2, '0')
     onChange(dateString)
     setIsOpen(false)
   }
