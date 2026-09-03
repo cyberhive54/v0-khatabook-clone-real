@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/use-auth'
@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Lock, Check, AlertCircle } from 'lucide-react'
 
-export default function ResetPasswordPage() {
+export const dynamic = 'force-dynamic'
+
+function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { updatePassword } = useAuth()
@@ -260,10 +262,24 @@ export default function ResetPasswordPage() {
           )}
         </Card>
 
-        <p className="text-center text-slate-500 text-xs mt-8">
-          Make sure your new password is secure and unique.
-        </p>
-      </div>
+<p className="text-center text-slate-500 text-xs mt-8">
+        Make sure your new password is secure and unique.
+      </p>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+          <p className="mt-4 text-slate-300">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }
