@@ -262,9 +262,10 @@ function ResetPasswordContent() {
           )}
         </Card>
 
-<p className="text-center text-slate-500 text-xs mt-8">
-        Make sure your new password is secure and unique.
-      </p>
+        <p className="text-center text-slate-500 text-xs mt-8">
+          Make sure your new password is secure and unique.
+        </p>
+      </div>
     </div>
   )
 }
