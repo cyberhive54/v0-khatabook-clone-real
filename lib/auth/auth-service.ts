@@ -50,8 +50,26 @@ export class AuthService {
   async resetPassword(data: ResetPasswordData, redirectUrl?: string) {
     const { email } = data
 
+    // Vercel/Supabase: must go via /auth/callback to exchange PKCE code for session
+    // Do NOT send user directly to /auth/reset-password, otherwise session is missing and updateUser fails.
+    // Priority: explicit redirectUrl > NEXT_PUBLIC_SITE_URL > window.location.origin > vercel url
+    const getSiteUrl = () => {
+      if (redirectUrl) return redirectUrl
+      if (typeof window !== 'undefined' && window.location.origin) {
+        return `${window.location.origin}/auth/callback?next=/auth/reset-password`
+      }
+      if (process.env.NEXT_PUBLIC_SITE_URL) {
+        return `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`
+      }
+      // Fallback for Vercel preview deployments
+      if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+        return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/callback?next=/auth/reset-password`
+      }
+      return 'http://localhost:3000/auth/callback?next=/auth/reset-password'
+    }
+
     const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl || `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/reset-password`,
+      redirectTo: getSiteUrl(),
     })
 
     if (error) {

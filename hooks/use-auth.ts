@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@/lib/auth/types'
 
 export function useAuth() {
   const router = useRouter()
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -71,7 +71,7 @@ export function useAuth() {
       setError(null)
 
       try {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -85,8 +85,12 @@ export function useAuth() {
           throw signUpError
         }
 
-        // Redirect to login page after signup
-        router.push('/auth/login?message=Check your email to confirm your account')
+        // If email confirmation is disabled Supabase returns session immediately
+        if (data.session) {
+          router.push('/')
+        } else {
+          router.push('/auth/login?message=Check your email to confirm your account')
+        }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to sign up'
         setError(errorMessage)
@@ -95,7 +99,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    []
+    [supabase, router]
   )
 
   const signIn = useCallback(
@@ -105,7 +109,7 @@ export function useAuth() {
 
       try {
         const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim().toLowerCase(),
           password,
         })
 
@@ -114,6 +118,7 @@ export function useAuth() {
         }
 
         router.push('/')
+        router.refresh()
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to sign in'
         setError(errorMessage)
@@ -122,7 +127,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    []
+    [supabase, router]
   )
 
   const signOut = useCallback(async () => {
@@ -138,6 +143,7 @@ export function useAuth() {
 
       setUser(null)
       router.push('/auth/login')
+      router.refresh()
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sign out'
       setError(errorMessage)
@@ -145,7 +151,7 @@ export function useAuth() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [supabase, router])
 
   const resetPassword = useCallback(
     async (email: string, redirectUrl?: string) => {
@@ -153,8 +159,22 @@ export function useAuth() {
       setError(null)
 
       try {
+        const getSiteUrl = () => {
+          if (redirectUrl) return redirectUrl
+          if (typeof window !== 'undefined' && window.location.origin) {
+            return `${window.location.origin}/auth/callback?next=/auth/reset-password`
+          }
+          if (process.env.NEXT_PUBLIC_SITE_URL) {
+            return `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`
+          }
+          if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+            return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/auth/callback?next=/auth/reset-password`
+          }
+          return 'http://localhost:3000/auth/callback?next=/auth/reset-password'
+        }
+
         const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: redirectUrl || `${typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'}/auth/reset-password`,
+          redirectTo: getSiteUrl(),
         })
 
         if (resetError) {
@@ -168,7 +188,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    []
+    [supabase]
   )
 
   const updatePassword = useCallback(
@@ -192,7 +212,7 @@ export function useAuth() {
         setLoading(false)
       }
     },
-    []
+    [supabase]
   )
 
   const deleteAccount = useCallback(

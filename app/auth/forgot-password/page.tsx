@@ -20,19 +20,31 @@ export default function ForgotPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    const trimmedEmail = email.trim().toLowerCase()
+    if (!trimmedEmail) {
+      setError('Please enter your email address')
+      return
+    }
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(trimmedEmail)) {
+      setError('Please enter a valid email address')
+      return
+    }
+
     setIsSubmitting(true)
-
     try {
-      if (!email) {
-        setError('Please enter your email address')
-        return
-      }
-
-      await resetPassword(email)
+      await resetPassword(trimmedEmail)
       setSuccess(true)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to send reset email'
-      setError(errorMessage)
+      // Don't leak if email exists - but surface rate limit / config errors
+      if (errorMessage.toLowerCase().includes('rate limit')) {
+        setError('Too many requests. Please wait a minute and try again.')
+      } else {
+        setError(errorMessage)
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -123,7 +135,7 @@ export default function ForgotPasswordPage() {
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || success}
                       className="pl-10 bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-500 focus:border-blue-500 focus:bg-slate-700/80"
                     />
                   </div>

@@ -54,23 +54,47 @@ export async function middleware(request: NextRequest) {
     "/auth/signup",
     "/auth/forgot-password",
     "/auth/reset-password",
+    "/auth/callback",
   ];
 
   const pathname = request.nextUrl.pathname;
+
+  // Allow callback route to handle PKCE exchange without interference
+  if (pathname.startsWith("/auth/callback")) {
+    return response;
+  }
 
   // Check if the route is public
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   // If user is not authenticated and trying to access a protected route
   if (!user && !isPublicRoute) {
-    // Redirect to login
     return NextResponse.redirect(new URL("/auth/login", request.url));
   }
 
   // If user is authenticated and trying to access auth routes
+  // IMPORTANT: Allow authenticated recovery session to access reset-password
+  // Supabase creates a session when user clicks email link (type=recovery)
   if (user && isPublicRoute) {
-    // Redirect to home/dashboard
-    return NextResponse.redirect(new URL("/", request.url));
+    const isResetPassword = pathname.startsWith("/auth/reset-password");
+    const hasCode = request.nextUrl.searchParams.has("code");
+    const hasError = request.nextUrl.searchParams.has("error");
+
+    // Don't redirect if user is on reset-password with recovery flow
+    if (isResetPassword && (hasCode || hasError)) {
+      return response;
+    }
+
+    // If user is on reset-password and has a session, allow it (recovery session)
+    // The reset-password page itself will validate the session + allow password update
+    if (isResetPassword && user) {
+      return response;
+    }
+
+    // For other auth routes (login/signup/forgot), redirect authed users home
+    if (!isResetPassword) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
   }
 
   return response;
